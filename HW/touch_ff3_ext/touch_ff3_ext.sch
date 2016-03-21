@@ -5038,7 +5038,7 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <part name="C2" library="SparkFun-Capacitors" deviceset="CAP" device="1206" value="4.7 uF"/>
 <part name="R1" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="330"/>
 <part name="R2" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="2K"/>
-<part name="Q1" library="SparkFun-DiscreteSemi" deviceset="MOSFET-PCHANNEL" device=""/>
+<part name="Q2" library="SparkFun-DiscreteSemi" deviceset="MOSFET-PCHANNEL" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -5085,7 +5085,7 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <instance part="C2" gate="G$1" x="182.88" y="91.44"/>
 <instance part="R1" gate="G$1" x="127" y="96.52"/>
 <instance part="R2" gate="G$1" x="175.26" y="91.44" rot="R90"/>
-<instance part="Q1" gate="G$1" x="114.3" y="144.78"/>
+<instance part="Q2" gate="G$1" x="114.3" y="144.78"/>
 </instances>
 <busses>
 <bus name="PORTF[0..7]">
@@ -5493,10 +5493,10 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <label x="241.3" y="86.36" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="Q1" gate="G$1" pin="D"/>
 <wire x1="114.3" y1="149.86" x2="114.3" y2="152.4" width="0.1524" layer="91"/>
 <wire x1="114.3" y1="152.4" x2="119.38" y2="152.4" width="0.1524" layer="91"/>
 <label x="121.92" y="152.4" size="1.778" layer="95"/>
+<pinref part="Q2" gate="G$1" pin="D"/>
 </segment>
 </net>
 <net name="PG0" class="0">
@@ -5511,9 +5511,9 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <pinref part="U$3" gate="H31" pin="PG0"/>
 </segment>
 <segment>
-<pinref part="Q1" gate="G$1" pin="G"/>
 <wire x1="106.68" y1="144.78" x2="101.6" y2="144.78" width="0.1524" layer="91"/>
 <label x="93.98" y="144.78" size="1.778" layer="95"/>
+<pinref part="Q2" gate="G$1" pin="G"/>
 </segment>
 </net>
 <net name="PG1" class="0">
@@ -5808,10 +5808,10 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 </net>
 <net name="N$2" class="0">
 <segment>
-<pinref part="Q1" gate="G$1" pin="S"/>
 <wire x1="114.3" y1="139.7" x2="114.3" y2="134.62" width="0.1524" layer="91"/>
 <pinref part="M1" gate="G$1" pin="V+"/>
 <wire x1="114.3" y1="134.62" x2="76.2" y2="134.62" width="0.1524" layer="91"/>
+<pinref part="Q2" gate="G$1" pin="S"/>
 </segment>
 </net>
 </nets>
