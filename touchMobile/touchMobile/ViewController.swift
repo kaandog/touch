@@ -9,13 +9,13 @@
 import UIKit
 import Alamofire
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
 
     let WS_URL = "http://touch-ws.herokuapp.com";
     let NODE_STORAGE_KEY = "node"
-    
-    @IBOutlet weak var upBtn: UIButton!
-    @IBOutlet weak var downBtn: UIButton!
+
+    @IBOutlet weak var nodesCollectionView: UICollectionView!
+    @IBOutlet weak var resetBtn: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,7 +57,7 @@ class ViewController: UIViewController {
             let firstTextField = alertController.textFields![0] as UITextField
             let nodeName = firstTextField.text;
             self.storeNewNode(nodeName!);
-            
+            self.nodesCollectionView.reloadData();
             let nodes = self.retrieveAllNodes();
             print(nodes);
         })
@@ -91,6 +91,7 @@ class ViewController: UIViewController {
         }
     }
 
+    // STORAGE
 
     func storeNewNode (nodeName:String) {
         let currentArray : NSMutableArray = self.retrieveAllNodes();
@@ -102,6 +103,47 @@ class ViewController: UIViewController {
         defaults.setObject(currentMutableArray, forKey: NODE_STORAGE_KEY);
         defaults.synchronize();
     }
+    
+    func flushNodes () {
+        //save
+        let defaults = NSUserDefaults.standardUserDefaults();
+        defaults.setObject([], forKey: NODE_STORAGE_KEY);
+        defaults.synchronize();
+    }
 
+    
+    ////////
+    
+    private let reuseIdentifier = "NodeCell"
+
+    //1
+    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+        return 1;
+    }
+    
+    //2
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        let currentArray : NSMutableArray = self.retrieveAllNodes();
+        return currentArray.count;
+    }
+    
+    //3
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let currentArray : NSMutableArray = self.retrieveAllNodes();
+
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! UICollectionViewCell
+        cell.backgroundColor = UIColor.redColor();
+        let label:UILabel = cell.viewWithTag(1) as! UILabel;
+        label.text = currentArray[indexPath.item] as! String;
+        // Configure the cell
+        return cell
+    }
+    
+    @IBAction func tappedResetBtn(sender: AnyObject) {
+        flushNodes();
+        self.nodesCollectionView.reloadData();
+    }
+
+    
 }
 

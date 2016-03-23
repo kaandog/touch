@@ -4,7 +4,6 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
-        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -19,37 +18,37 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q0C-xz-2QN">
-                                <rect key="frame" x="149" y="375" width="149" height="42"/>
-                                <state key="normal" title="Down"/>
+                            <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5fP-5x-ssN">
+                                <rect key="frame" x="525" y="22" width="30" height="23"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <state key="normal" title="+">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
                                 <connections>
-                                    <action selector="tappedDown:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GS9-83-2Xc"/>
+                                    <action selector="plusButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l3D-dl-p7Z"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YpW-3Y-pdl">
-                                <rect key="frame" x="149" y="223" width="149" height="46"/>
-                                <state key="normal" title="Up"/>
-                                <connections>
-                                    <action selector="tappedUp:" destination="BYZ-38-t0r" eventType="touchUpInside" id="u9T-YE-5AA"/>
-                                </connections>
-                            </button>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="BmS-HY-w53">
-                                <rect key="frame" x="28" y="127" width="527" height="128"/>
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="logotype" translatesAutoresizingMaskIntoConstraints="NO" id="RNy-ll-PYe">
+                                <rect key="frame" x="240" y="20" width="120" height="34"/>
+                            </imageView>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="BmS-HY-w53">
+                                <rect key="frame" x="0.0" y="62" width="600" height="518"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="xSL-zI-Vem">
-                                    <size key="itemSize" width="116" height="123"/>
+                                    <size key="itemSize" width="280" height="406"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                    <inset key="sectionInset" minX="20" minY="0.0" maxX="20" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="hX5-xA-5r0">
-                                        <rect key="frame" x="0.0" y="2.5" width="116" height="123"/>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NodeCell" id="hX5-xA-5r0">
+                                        <rect key="frame" x="20" y="56" width="280" height="406"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                            <rect key="frame" x="0.0" y="0.0" width="116" height="123"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="280" height="406"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="NodeName" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JfG-kW-wyt">
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="NodeName" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JfG-kW-wyt">
                                                     <rect key="frame" x="15" y="50" width="87" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -69,39 +68,44 @@
                                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                     </collectionViewCell>
                                 </cells>
+                                <connections>
+                                    <outlet property="dataSource" destination="BYZ-38-t0r" id="WG3-AY-grh"/>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="ww9-kS-j70"/>
+                                </connections>
                             </collectionView>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5fP-5x-ssN">
-                                <rect key="frame" x="525" y="22" width="30" height="30"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
-                                <state key="normal" title="+">
-                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jBc-Ga-kUa">
+                                <rect key="frame" x="256" y="562" width="88" height="30"/>
+                                <state key="normal" title="Reset Nodes">
+                                    <color key="titleColor" red="0.79327552356020936" green="0.79327552356020936" blue="0.79327552356020936" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="plusButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l3D-dl-p7Z"/>
+                                    <action selector="tappedResetBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="J5B-S2-hMq"/>
                                 </connections>
                             </button>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="logotype" translatesAutoresizingMaskIntoConstraints="NO" id="RNy-ll-PYe">
-                                <rect key="frame" x="240" y="20" width="120" height="34"/>
-                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="Q0C-xz-2QN" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.5" id="1S7-FO-enA"/>
+                            <constraint firstItem="jBc-Ga-kUa" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="5Zl-d8-8pv"/>
                             <constraint firstAttribute="trailingMargin" secondItem="5fP-5x-ssN" secondAttribute="trailing" constant="25" id="Kbm-Zf-TQn"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="BmS-HY-w53" secondAttribute="trailing" id="L5F-X6-le8"/>
                             <constraint firstItem="BmS-HY-w53" firstAttribute="top" secondItem="RNy-ll-PYe" secondAttribute="bottom" constant="80" id="OjQ-F9-EKU"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="BmS-HY-w53" secondAttribute="bottom" constant="20" id="Q0C-j4-crl"/>
+                            <constraint firstItem="BmS-HY-w53" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="Spn-41-G8d"/>
                             <constraint firstItem="RNy-ll-PYe" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="X3r-zT-4R9"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="jBc-Ga-kUa" secondAttribute="bottom" constant="12" id="cvN-7S-Px4"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="jBc-Ga-kUa" secondAttribute="trailing" id="dB2-E6-GLS"/>
                             <constraint firstItem="BmS-HY-w53" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="eyo-3G-g9K"/>
                             <constraint firstAttribute="trailingMargin" secondItem="RNy-ll-PYe" secondAttribute="trailing" id="g8R-tz-EIT"/>
                             <constraint firstItem="RNy-ll-PYe" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="lfq-IX-JXE"/>
                             <constraint firstItem="5fP-5x-ssN" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="u2q-OL-zLd"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="BmS-HY-w53" secondAttribute="trailing" id="wa2-h4-FnX"/>
-                            <constraint firstItem="YpW-3Y-pdl" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.5" id="zYK-kj-Gsc"/>
+                            <constraint firstItem="BmS-HY-w53" firstAttribute="top" secondItem="RNy-ll-PYe" secondAttribute="bottom" constant="180" id="uCC-O3-6eT"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="BmS-HY-w53" secondAttribute="trailing" constant="-20" id="wa2-h4-FnX"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="downBtn" destination="Q0C-xz-2QN" id="ELl-gq-1j5"/>
+                        <outlet property="nodesCollectionView" destination="BmS-HY-w53" id="OH3-dD-0mL"/>
                         <outlet property="plusButton" destination="5fP-5x-ssN" id="tfu-31-0Km"/>
-                        <outlet property="upBtn" destination="YpW-3Y-pdl" id="KgU-pC-50B"/>
+                        <outlet property="resetBtn" destination="jBc-Ga-kUa" id="KPY-vD-Ash"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
