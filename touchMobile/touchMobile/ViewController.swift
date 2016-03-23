@@ -9,10 +9,11 @@
 import UIKit
 import Alamofire
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+let WS_URL = "http://touch-ws.herokuapp.com";
+let NODE_STORAGE_KEY = "node"
 
-    let WS_URL = "http://touch-ws.herokuapp.com";
-    let NODE_STORAGE_KEY = "node"
+
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
 
     @IBOutlet weak var nodesCollectionView: UICollectionView!
     @IBOutlet weak var resetBtn: UIButton!
@@ -25,21 +26,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         super.didReceiveMemoryWarning()
     }
 
-    @IBAction func tappedUp(sender: AnyObject) {
-        print( WS_URL + "/up/" + "ilter")
-        Alamofire.request(.GET, WS_URL + "/up/" + "ilter").responseJSON { response in
-            print(response.data)     // server data
-            print(response.result)
-
-            if let JSON = response.result.value {
-                print("JSON: \(JSON)")
-            }
-        }
-    }
-
-    @IBAction func tappedDown(sender: AnyObject) {
-        Alamofire.request(.GET, WS_URL + "/down/" + "ilter")
-    }
 
     @IBOutlet weak var plusButton: UIButton!
     
@@ -131,10 +117,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let currentArray : NSMutableArray = self.retrieveAllNodes();
 
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! UICollectionViewCell
-        cell.backgroundColor = UIColor.redColor();
-        let label:UILabel = cell.viewWithTag(1) as! UILabel;
-        label.text = currentArray[indexPath.item] as! String;
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! NodeCell;
+        cell.nodeName = currentArray[indexPath.item] as! String;
+        cell.nameLabel.text = currentArray[indexPath.item] as! String;
         // Configure the cell
         return cell
     }
@@ -143,7 +128,49 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         flushNodes();
         self.nodesCollectionView.reloadData();
     }
-
     
+}
+
+
+class NodeCell: UICollectionViewCell {
+    
+    @IBOutlet weak var nameLabel: UILabel!
+
+    var nodeName = "";
+
+    func tappedUp(nodeName: String) {
+        print( WS_URL + "/up/" + nodeName)
+        Alamofire.request(.GET, WS_URL + "/up/" + nodeName);
+    }
+    
+    func tappedDown(nodeName: String) {
+        print( WS_URL + "/down/" + nodeName)
+        Alamofire.request(.GET, WS_URL + "/down/" + nodeName);
+    }
+
+    @IBOutlet weak var upBtn: UIButton!
+    @IBOutlet weak var downBtn: UIButton!
+    
+    func retrieveAllNodes () -> NSMutableArray {
+        let defaults = NSUserDefaults.standardUserDefaults();
+        
+        //read
+        if let nodesArray : AnyObject = defaults.objectForKey(NODE_STORAGE_KEY) {
+            let readArray = nodesArray as! NSMutableArray;
+            return readArray;
+        }
+        else {
+            return [];
+        }
+    }
+
+    @IBAction func tappedUpBtn(sender: UIButton) {
+        tappedUp(self.nodeName);
+    }
+    
+    @IBAction func tappedDownBtn(sender: UIButton) {
+        tappedDown(self.nodeName);
+    }
+
 }
 

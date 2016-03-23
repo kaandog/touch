@@ -41,31 +41,42 @@
                                     <inset key="sectionInset" minX="20" minY="0.0" maxX="20" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NodeCell" id="hX5-xA-5r0">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NodeCell" id="hX5-xA-5r0" customClass="NodeCell" customModule="TouchMobile" customModuleProvider="target">
                                         <rect key="frame" x="20" y="56" width="280" height="406"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="280" height="406"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
+                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rGo-Mj-mbZ">
+                                                    <rect key="frame" x="121" y="336" width="38" height="30"/>
+                                                    <state key="normal" title="down"/>
+                                                    <connections>
+                                                        <action selector="tappedDownBtn:" destination="hX5-xA-5r0" eventType="touchUpInside" id="Ud3-K4-fd9"/>
+                                                    </connections>
+                                                </button>
+                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z1G-5v-r4T">
+                                                    <rect key="frame" x="125" y="19" width="30" height="30"/>
+                                                    <state key="normal" title="up"/>
+                                                    <connections>
+                                                        <action selector="tappedUpBtn:" destination="hX5-xA-5r0" eventType="touchUpInside" id="rfv-hl-Tze"/>
+                                                    </connections>
+                                                </button>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="NodeName" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JfG-kW-wyt">
-                                                    <rect key="frame" x="15" y="50" width="87" height="21"/>
+                                                    <rect key="frame" x="97" y="187" width="87" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rGo-Mj-mbZ">
-                                                    <rect key="frame" x="39" y="87" width="38" height="30"/>
-                                                    <state key="normal" title="down"/>
-                                                </button>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z1G-5v-r4T">
-                                                    <rect key="frame" x="43" y="8" width="30" height="30"/>
-                                                    <state key="normal" title="up"/>
-                                                </button>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                        <connections>
+                                            <outlet property="downBtn" destination="rGo-Mj-mbZ" id="hu0-LE-keu"/>
+                                            <outlet property="nameLabel" destination="JfG-kW-wyt" id="FHD-HQ-LYB"/>
+                                            <outlet property="upBtn" destination="z1G-5v-r4T" id="73I-ui-4SE"/>
+                                        </connections>
                                     </collectionViewCell>
                                 </cells>
                                 <connections>
