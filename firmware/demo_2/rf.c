@@ -9,7 +9,7 @@
 #include "rf.h"
 
 #define ACK_INTERRUPT(x) (IRQ_STATUS = (1 << (x)))
-#define GET_TRX_STATE() (TRX_STATE & 0xF1)
+#define GET_TRX_STATUS() (TRX_STATUS & 0x1F)
 
 void (*g_rx_callback) (void) = NULL;
 void (*g_tx_callback) (void) = NULL;
@@ -42,23 +42,29 @@ SIGNAL(TRX24_TX_END_vect)
 {
     printf("TX_DONE IRQ\r\n");
     ACK_INTERRUPT(TX_END);
+    rf_trx_cmd(CMD_RX_ON);
     return;
 }
 
 /** @brief blocking state change
  */
-void rf_change_state(uint8_t cmd)
+void rf_trx_cmd_safe(uint16_t cmd)
 {
+    volatile uint8_t status;
+
     // wait for a previous state transition to finish
-    while(GET_TRX_STATE() == STATE_TRANSITION_IN_PROGRESS)
-        continue;
+    do
+    {
+        status = GET_TRX_STATUS();
+    } while(status == STATE_TRANSITION_IN_PROGRESS);
     
-    TRX_STATE = cmd;
+    rf_trx_cmd(cmd);
 
     // wait for this state transition to finish
-    while(GET_TRX_STATE() == STATE_TRANSITION_IN_PROGRESS)
-        continue;
-}
+    do
+    {
+        status = GET_TRX_STATUS();
+    } while(status == STATE_TRANSITION_IN_PROGRESS);}
 
 /* @brief enable all rf interrupts
  */
@@ -93,12 +99,14 @@ void rf_rx_packet(uint8_t *buffer, uint8_t *len)
     
     /* TODO: maybe dynamic frame buffer protection */
     rx_len = TST_RX_LENGTH;
-    *len  = rx_len;
-    
+    //*len  = rx_len;
+    printf("rx_len = %d\r\n", rx_len); 
     for (i = 0; i < rx_len; i++)
     {
-        buffer[i] = rx_buf[i];
+        //buffer[i] = rx_buf[i];
+        printf("%c", (char)rx_buf[i]);
     }
+    printf("\r\n");
 
 }
 
@@ -123,6 +131,8 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
         return RF_ERROR;
     }
 
+    printf("status before: %x\r\n", GET_TRX_STATUS());
+
     /* TODO: disable receiving here? */
     tx_buf[0] = buf_len;
     for (i = 1; i-1 < buf_len; i++)
@@ -130,8 +140,10 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
         tx_buf[i] = buf[i-1];
     }
 
-    rf_trx_cmd(CMD_TX_START);
+    rf_trx_cmd_safe(CMD_TX_START);
 
+    printf("status after: %x\r\n", GET_TRX_STATUS());
+    
     return RF_SUCCESS;
 }
 
@@ -144,13 +156,17 @@ void rf_rx_on(void)
  */
 void rf_init(void *rx_callback, void* tx_callback)
 {
+    volatile uint8_t status;
     g_rx_callback = rx_callback;
     g_tx_callback = tx_callback;
 
     // TODO: on-chip debug system must be disabled for best performance
-    // TODO: install interrupt handlers
     rf_enable_int();
 
-    printf("TRXFBST: %x\r\n", TRXFBST);
-    printf("&TRXFBST: %x\r\n", (uint16_t) &TRXFBST);
+    rf_trx_cmd_safe(CMD_RX_ON);
+    do
+    {
+        status = GET_TRX_STATUS();
+        printf("%x\r\n", status);
+    } while(status!= RX_ON);
 }

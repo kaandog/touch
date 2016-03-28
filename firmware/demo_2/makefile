@@ -18,6 +18,7 @@
 
 # program name should not be changed...
 PROGRAM    = demo
+PORT = `ls /dev/tty.usb* | grep usb | head -n 1`
 
 # enter the parameters for the avrdude isp tool
 ISPTOOL	   = stk500v2
@@ -72,7 +73,7 @@ all: AVR_FREQ = 16000000L
 all: $(PROGRAM).hex
 
 program:
-	avrdude -b 57600 -F -p atmega128 -P /dev/tty.usbserial-A903FO2X -c arduino -V -U flash:w:$(PROGRAM).hex
+	avrdude -b 57600 -F -p atmega128 -P $(PORT) -c arduino -V -U flash:w:$(PROGRAM).hex
 
 atmega328_isp: atmega328
 atmega328_isp: TARGET = atmega328
