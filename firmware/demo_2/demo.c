@@ -73,6 +73,7 @@ uint16_t adc_read(uint8_t ch)
 void rx_callback()
 {
     printf("SOMETHING WICKED THIS WAY COMES!\r\n");
+    return;
 }
 
 int main(void)
@@ -87,19 +88,18 @@ int main(void)
     // Setup ports
     DDRB |= (1<<5);
 
-    TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);        //NON Inverted PWM
-    TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10); //PRESCALER=64 MODE 14(FAST PWM)
-    ICR1=4999;  //fPWM=50Hz (Period = 20ms Standard).
+    TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);
+    TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10);
+    ICR1=4999;
     
     rf_init(rx_callback, NULL);
     
     printf("Starting loop...\r\n");
     while(1)
     {
-        static const char hello[] = "hello, it's me!\r\n";
+        static const char hello[] = "hello, it's me again!\r\n";
         input = getchar();
-        printf("sending packet of len %d\r\n", sizeof(hello));
-        rf_rx_packet(buffer, &len);
+        //rf_rx_packet(buffer, &len);
         rf_tx_packet_nonblocking((uint8_t*) hello, sizeof(hello));
         switch(input)
         {

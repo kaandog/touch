@@ -72,6 +72,7 @@ void rf_enable_int(void)
 {
     // enable all rf and tx interrupts
     IRQ_MASK = (1 << TX_END_EN) | (1 << RX_END_EN);
+    sei();
 }
 
 /* @brief disable all rf interrupts
@@ -88,8 +89,11 @@ void rf_disable_int(void)
  */
 void rf_trx_cmd(uint16_t cmd)
 {
+    printf("sending cmd: %d\r\n", cmd);
 
-    TRX_STATE = (cmd & TRX_CMD_MASK) | (TRX_STATE & TRX_CMD_MASK);
+    TRX_STATE = cmd | (TRX_STATE & ~TRX_CMD_MASK);
+    printf("status1: %d\r\n", GET_TRX_STATUS());
+    printf("status2: %d\r\n", GET_TRX_STATUS());
 }
 
 void rf_rx_packet(uint8_t *buffer, uint8_t *len)
@@ -130,17 +134,21 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
         printf("packet can't be NULL\n");
         return RF_ERROR;
     }
-
+   
+    // go into pll on, bus_tx can only be 
+    // entered from this state
+    rf_trx_cmd(CMD_PLL_ON);
     printf("status before: %x\r\n", GET_TRX_STATUS());
 
-    /* TODO: disable receiving here? */
     tx_buf[0] = buf_len;
     for (i = 1; i-1 < buf_len; i++)
     {
         tx_buf[i] = buf[i-1];
     }
 
-    rf_trx_cmd_safe(CMD_TX_START);
+    printf("tx_len:%d\r\n", TRXFBST);
+
+    rf_trx_cmd(CMD_TX_START);
 
     printf("status after: %x\r\n", GET_TRX_STATUS());
     
