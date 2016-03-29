@@ -137,7 +137,7 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
    
     // go into pll on, bus_tx can only be 
     // entered from this state
-    rf_trx_cmd(CMD_PLL_ON);
+    rf_trx_cmd_safe(CMD_PLL_ON);
     printf("status before: %x\r\n", GET_TRX_STATUS());
 
     tx_buf[0] = buf_len;
@@ -148,16 +148,56 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
 
     printf("tx_len:%d\r\n", TRXFBST);
 
-    rf_trx_cmd(CMD_TX_START);
+    rf_trx_cmd_safe(CMD_TX_START);
 
     printf("status after: %x\r\n", GET_TRX_STATUS());
     
     return RF_SUCCESS;
 }
 
+/* @brief transitions into tx_start
+ *
+ *  Will change into PLL_ON if not already in it.
+ */
+void rf_tx_start(void)
+{
+    if (GET_TRX_STATUS() != PLL_ON)
+    {
+        rf_trx_cmd_safe(CMD_PLL_ON);
+    }
+    rf_trx_cmd_safe(CMD_TX_START);
+}
+
+/* @brief transition in rx_on
+ */
 void rf_rx_on(void)
 {
-    
+   rf_trx_cmd_safe(CMD_RX_ON); 
+}
+
+/* @brief transition in to trx_off
+ */
+void rf_trx_off(void)
+{
+    rf_trx_cmd_safe(CMD_FORCE_TRX_OFF);
+}
+
+/* @brief transition into sleep
+ */
+void rf_sleep(void)
+{
+    if (GET_TRX_STATUS() != TRX_OFF)
+    {
+        rf_trx_off();
+    }
+    TRXPR = TRXPR | (1 << SLPTR);
+}
+
+/* @brief wake from sleep
+ */
+void rf_wake(void)
+{
+    TRXPR = TRXPR & ~(1 << SLPTR);
 }
 
 /* @brief initializes rf

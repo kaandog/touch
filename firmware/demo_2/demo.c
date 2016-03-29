@@ -99,7 +99,6 @@ int main(void)
     {
         static const char hello[] = "hello, it's me again!\r\n";
         input = getchar();
-        //rf_rx_packet(buffer, &len);
         rf_tx_packet_nonblocking((uint8_t*) hello, sizeof(hello));
         switch(input)
         {
