@@ -99,10 +99,10 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
         case '5':
             OCR1A = 535;
         case 'q':
-            if (OCR1A >= 130)
+            if (OCR1A >= 180)
                 OCR1A = OCR1A-30;
             else
-                OCR1A = 105;
+                OCR1A = 150;
             break;
         case 'w':
             if (OCR1A <= 500)
