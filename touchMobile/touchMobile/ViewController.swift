@@ -7,13 +7,30 @@
 //
 
 import UIKit
+import UIKit.UIGestureRecognizerSubclass
 import Alamofire
 
 let WS_URL = "http://touch-ws.herokuapp.com";
 let NODE_STORAGE_KEY = "node"
 
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+
+class DopeRecognizer: UILongPressGestureRecognizer
+{
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent) {
+        super.touchesMoved(touches, withEvent: event);
+        let delegate = self.delegate as! DopeRecognizerDelegate;
+        delegate.gestureRecognizer(self, movedWithTouches: touches, Event: event);
+    }
+}
+
+
+protocol DopeRecognizerDelegate: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_:UIGestureRecognizer, movedWithTouches touches:Set<UITouch>, Event event:UIEvent);
+}
+
+
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate,DopeRecognizerDelegate {
 
     @IBOutlet weak var nodesCollectionView: UICollectionView!
     @IBOutlet weak var resetBtn: UIButton!
@@ -25,12 +42,77 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
+    
+    func draggedView(sender:UIPanGestureRecognizer){
+        print("Dragged veiw");
+     
+    }
 
+    var initialTranslation:CGPoint? = nil;
+    let bufferTranslation = 0;
+    
+    func tappedUp(nodeName: String) {
+        print( WS_URL + "/up/" + nodeName)
+        Alamofire.request(.GET, WS_URL + "/up/" + nodeName);
+    }
+    
+    func tappedDown(nodeName: String) {
+        print( WS_URL + "/down/" + nodeName)
+        Alamofire.request(.GET, WS_URL + "/down/" + nodeName);
+    }
 
+    func tappedView(sender:DopeRecognizer){
+
+        let cell:NodeCell = sender.view as! NodeCell;
+        let translation = sender.locationInView(cell);
+        cell.touchDotImg.frame.origin.x =  translation.x - cell.touchDotImg.frame.width/2;
+        cell.touchDotImg.frame.origin.y = translation.y - cell.touchDotImg.frame.height/2;
+
+        // do other task
+        if sender.state == .Began {
+
+            UIView.animateWithDuration(0.15, delay: 0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+                cell.touchDotImg.alpha = 1.0
+            }, completion: nil)
+            
+            initialTranslation = translation;
+        }
+        
+        if sender.state == .Changed
+        {
+            if initialTranslation != nil {
+                let distance = initialTranslation!.y - translation.y;
+                print(distance);
+                
+                if (distance > 50) {
+                    //send up
+                    initialTranslation = translation;
+                    tappedUp(cell.nodeName);
+                }
+                else if (distance < -50) {
+                    //send down
+                    initialTranslation = translation;
+                    tappedDown(cell.nodeName);
+                }
+                
+            }
+        }
+        if sender.state == .Ended {
+            print("ended")
+            let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
+
+            UIView.animateWithDuration(0.15, delay: 0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+                cell.touchDotImg.alpha = 0.0
+            }, completion: nil)
+            
+            initialTranslation = nil;
+        }
+    }
+    
+    
+    
     @IBOutlet weak var plusButton: UIButton!
     
-
-
 
     @IBAction func plusButtonTapped(sender: AnyObject) {
         
@@ -120,37 +202,54 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! NodeCell;
         cell.nodeName = currentArray[indexPath.item] as! String;
         cell.nameLabel.text = currentArray[indexPath.item] as! String;
+        
+        let gestureRec = DopeRecognizer()
+        gestureRec.addTarget(self, action: Selector("tappedView:"));
+        gestureRec.delegate = self;
+        gestureRec.minimumPressDuration = 0.05;
+        gestureRec.numberOfTouchesRequired = 1;
+        cell.addGestureRecognizer(gestureRec);
         // Configure the cell
         return cell
     }
-    
+
+    func gestureRecognizer(sender:UIGestureRecognizer, movedWithTouches touches:Set<UITouch>, Event event:UIEvent) {
+        
+        let cell:NodeCell = sender.view as! NodeCell;
+        print(touches.count);
+        for touch in touches {
+
+            var size:CGFloat = 80.00;
+            if self.traitCollection.forceTouchCapability == UIForceTouchCapability.Available
+            {
+                size = size + (touch.force/touch.maximumPossibleForce) * 120;
+            }
+
+            let frame: CGRect =
+                CGRectMake( cell.touchDotImg.frame.origin.x , cell.touchDotImg.frame.origin.y, size, size);
+            cell.touchDotImg.frame = frame;
+            
+        }
+    }
+
+
     @IBAction func tappedResetBtn(sender: AnyObject) {
         flushNodes();
         self.nodesCollectionView.reloadData();
     }
-    
+
 }
 
 
 class NodeCell: UICollectionViewCell {
-    
+
     @IBOutlet weak var nameLabel: UILabel!
 
     var nodeName = "";
 
-    func tappedUp(nodeName: String) {
-        print( WS_URL + "/up/" + nodeName)
-        Alamofire.request(.GET, WS_URL + "/up/" + nodeName);
-    }
-    
-    func tappedDown(nodeName: String) {
-        print( WS_URL + "/down/" + nodeName)
-        Alamofire.request(.GET, WS_URL + "/down/" + nodeName);
-    }
+    @IBOutlet weak var touchDotImg: UIImageView!
 
-    @IBOutlet weak var upBtn: UIButton!
-    @IBOutlet weak var downBtn: UIButton!
-    
+
     func retrieveAllNodes () -> NSMutableArray {
         let defaults = NSUserDefaults.standardUserDefaults();
         
@@ -167,7 +266,7 @@ class NodeCell: UICollectionViewCell {
     @IBAction func tappedUpBtn(sender: UIButton) {
         tappedUp(self.nodeName);
     }
-    
+
     @IBAction func tappedDownBtn(sender: UIButton) {
         tappedDown(self.nodeName);
     }
