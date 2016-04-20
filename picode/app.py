@@ -14,18 +14,10 @@ ser = serial.Serial(
        timeout=1
        )
 
-@app.route('/up/<usr>')
-def up(usr):
-    s = "UP : " + str(usr)
-    print s
-    ser.write("5")
-    return s
-
-@app.route('/down/<usr>')
-def down(usr):
-    s = "DOWN : " + str(usr)
-    print s
-    ser.write("1")
+@app.route('/<angle>/<usr>')
+def run(angle, usr):
+    s = str(angle) + "," + str(usr) + "\n"
+    ser.write(s)
     return s
 
 if __name__ == '__main__':
