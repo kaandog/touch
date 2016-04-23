@@ -78,14 +78,16 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
         printf("Invalid buf_len size %d\r\n", buf_len);
         return;
     }
-
+    servo_on();
+    // delay until tranistor is saturated
+    _delay_ms(50);
     servo_pos = buf[0];
     printf("servo_pos %c \r\n", servo_pos);
 
     switch(servo_pos)
     {
         case '1':
-            OCR1A = 105;
+            OCR1A = 133;
             break;
         case '2':
             OCR1A = 200;
@@ -97,7 +99,7 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
             OCR1A = 425;
             break;
         case '5':
-            OCR1A = 535;
+            OCR1A = 533;
         case 'q':
             if (OCR1A >= 180)
                 OCR1A = OCR1A-30;
@@ -110,15 +112,12 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
             else
                 OCR1A = 535;
             break;
-        case '[':
-            servo_on();
-            break;
-        case ']':
-            servo_off();
-            break;
         default:
             break;
         }
+    // delay until servo finishes rotation
+    _delay_ms(500);
+    servo_off();
 
     return;
 }
@@ -126,13 +125,11 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
 void servo_off(void)
 {
     PORTG &= ~(1<<0);
-    PORTB &= ~(1<<2);
 }
 
 void servo_on(void)
 {
     PORTG |= (1<<0);
-    PORTB |= (1<<2);
 }
 
 int main(void)
