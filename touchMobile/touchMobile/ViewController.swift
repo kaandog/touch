@@ -60,6 +60,10 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         print( WS_URL + "/down/" + nodeName)
         Alamofire.request(.GET, WS_URL + "/down/" + nodeName);
     }
+    
+    func swiped(nodeName: String, distance:Int) {
+        Alamofire.request(.GET, WS_URL + "/swipe/" + nodeName + "/" + distance);
+    }
 
     func tappedView(sender:DopeRecognizer){
 
@@ -87,7 +91,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 if (distance > 50) {
                     //send up
                     initialTranslation = translation;
-                    tappedUp(cell.nodeName);
                 }
                 else if (distance < -50) {
                     //send down
@@ -99,6 +102,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
         if sender.state == .Ended {
             print("ended")
+            if initialTranslation != nil {
+                let distance = initialTranslation!.y - translation.y;
+                swiped(cell.nodeName, distance);
+            }
+    
             let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
 
             UIView.animateWithDuration(0.15, delay: 0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
