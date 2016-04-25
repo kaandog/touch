@@ -23,7 +23,7 @@ PORT = `ls /dev/tty.usb* | grep usb | head -n 1`
 # enter the parameters for the avrdude isp tool
 ISPTOOL	   = stk500v2
 ISPPORT	   = usb
-ISPSPEED   = -b 115800
+ISPSPEED   = -b 115200
 
 MCU_TARGET = atmega128rfa1
 LDSECTION  = --section-start=.text=0x0000
@@ -53,7 +53,7 @@ OBJ        = $(PROGRAM).o ../rf/rf.o
 OPTIMIZE   = -O2
 
 INC 	   = ../rf
-DEFS       =
+DEFS       = 
 LIBS       =
 
 CC         = avr-gcc
@@ -70,15 +70,13 @@ OBJDUMP        = avr-objdump
 
 all: TARGET = atmega128rfa1
 all: MCU_TARGET = atmega128rfa1
-all: AVR_FREQ = 16000000L
+all: AVR_FREQ = 16000000L 
 all: $(PROGRAM).hex
 
 program:
 	make clean
 	make
-	avrdude -pm128rfa1 -c avrispmkII -P usb -U flash:w:$(PROGRAM).hex
-
-	#avrdude -b 57600 -F -p atmega128 -P $(PORT) -c arduino -V -U flash:w:$(PROGRAM).hex
+	avrdude -b 57600 -F -p atmega128 -P $(PORT) -c arduino -V -U flash:w:$(PROGRAM).hex
 
 atmega328_isp: atmega328
 atmega328_isp: TARGET = atmega328
@@ -114,4 +112,4 @@ clean:
 
 %.bin: %.elf
 	$(OBJCOPY) -j .text -j .data -O binary $< $@
-
+	
