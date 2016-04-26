@@ -82,11 +82,7 @@ int main(void)
     uint8_t buffer[128];
     uint8_t buf_i;
     uint8_t len;
-    char cmd;
-    uint8_t node_id;
-    uint8_t data;
-
-    touch_packet pkt;
+    touch_packet_t pkt;
 
     // init uart
     uart_init();
@@ -106,20 +102,21 @@ int main(void)
     {
         buf_i = 0;
         input = getchar();
-        while (input != '\n' && buf_i < sizeof(buffer)) {
+        while (input != '\n' && input != '\r' && buf_i < sizeof(buffer)) {
             printf("%c", input);
             buffer[buf_i++]= input;
             input = getchar();
         }
         buffer[buf_i++] = '\0';
-        printf("\n");
+        printf("\r\n");
 
-        sscanf("%c,%u,%u",&cmd,&data,&node_id);
+        printf("buffer:%s", buffer);
+        sscanf(buffer, " %c,%d,%d",&pkt.cmd,&pkt.data,&pkt.node_id);
 
-        pkt.cmd = cmd;
-        pkt.data = data;
-        pkt.node_id = node_id;
+        printf("pkt.cmd = %c\r\n", pkt.cmd);
+        printf("pkt.data = %d\r\n", pkt.data);
+        printf("pkt.node_id = %d\r\n", pkt.node_id);
 
-        rf_tx_packet_nonblocking((uint8_t*) &pkt, sizeof(input));
+        rf_tx_packet_nonblocking((uint8_t*) &pkt, sizeof(touch_packet_t));
     }
 }
