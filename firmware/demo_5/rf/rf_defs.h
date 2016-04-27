@@ -1,6 +1,6 @@
 /* @file rf_defs.h
  *
- *  Contains registers and constants used by the 
+ *  Contains registers and constants used by the
  *  Atmega128rfa1.
  *
  */
@@ -12,5 +12,7 @@
 
 #define RF_SUCCESS  (0)
 #define RF_ERROR    (-1)
+
+#define GATEWAY_ID 0
 
 #define RF_MAX_PACKET_LEN   (120)

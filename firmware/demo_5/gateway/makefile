@@ -16,6 +16,10 @@
 # make ng_isp
 # etc...
 
+ifndef NODE_ID
+NODE_ID = 0
+endif
+
 # program name should not be changed...
 PROGRAM    = demo
 PORT = `ls /dev/tty.usb* | grep usb | head -n 1`
@@ -49,11 +53,11 @@ STK500-1 = $(STK500) -e -d$(MCU_TARGET) -pf -vf -if$(PROGRAM)_$(TARGET).hex \
 STK500-2 = $(STK500) -d$(MCU_TARGET) -ms -q -lCF -LCF -cUSB -I200kHz -s -wt
 
 
-OBJ        = $(PROGRAM).o ../rf/rf.o
+OBJ        = $(PROGRAM).o ../rf/rf.o ../rf/rf_touch.o
 OPTIMIZE   = -O2
 
 INC 	   = ../rf
-DEFS       = 
+DEFS       = -D NODE_ID=$(NODE_ID)
 LIBS       =
 
 CC         = avr-gcc
@@ -70,7 +74,7 @@ OBJDUMP        = avr-objdump
 
 all: TARGET = atmega128rfa1
 all: MCU_TARGET = atmega128rfa1
-all: AVR_FREQ = 16000000L 
+all: AVR_FREQ = 16000000L
 all: $(PROGRAM).hex
 
 program:
@@ -112,4 +116,4 @@ clean:
 
 %.bin: %.elf
 	$(OBJCOPY) -j .text -j .data -O binary $< $@
-	
+
