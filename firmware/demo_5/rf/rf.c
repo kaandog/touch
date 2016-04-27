@@ -210,6 +210,10 @@ void rf_init(void *rx_callback, void* tx_callback)
     //dynamic buffer protection
     //TRX_CTRL_2 |= (1 << RX_SAFE_MODE);
 
+    // set the mac address of the node
+    // SHORT_ADDR_0 = NODE_ID & 0xff;
+    // SHORT_ADDR_1 = (NODE_ID >> 8) 0xff;
+
     rf_trx_cmd_safe(CMD_PLL_ON);
     do
     {

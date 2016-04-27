@@ -16,6 +16,11 @@
 # make ng_isp
 # etc...
 
+# set the default node id if it's not passed in
+ifndef NODE_ID
+NODE_ID = 1
+endif
+
 # program name should not be changed...
 PROGRAM    = demo
 PORT = `ls /dev/tty.usb* | grep usb | head -n 1`
@@ -49,11 +54,11 @@ STK500-1 = $(STK500) -e -d$(MCU_TARGET) -pf -vf -if$(PROGRAM)_$(TARGET).hex \
 STK500-2 = $(STK500) -d$(MCU_TARGET) -ms -q -lCF -LCF -cUSB -I200kHz -s -wt
 
 
-OBJ        = $(PROGRAM).o ../rf/rf.o
+OBJ        = $(PROGRAM).o ../rf/rf.o ../rf/rf_touch.o
 OPTIMIZE   = -O2
 
 INC 	   = ../rf
-DEFS       =
+DEFS       = -D NODE_ID=$(NODE_ID)
 LIBS       =
 
 CC         = avr-gcc
