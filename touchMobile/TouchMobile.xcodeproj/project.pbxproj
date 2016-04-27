@@ -65,6 +65,7 @@
 		CE3472FE1CCEB64000EAB5EB /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = touchMobile/Config.swift; sourceTree = SOURCE_ROOT; };
 		CE3473001CCECA9F00EAB5EB /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		CE3473021CCFD95900EAB5EB /* AlarmsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlarmsViewController.swift; sourceTree = "<group>"; };
+		CE3473041CD15F0600EAB5EB /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		EC32FF7F361C008CC9B81E5D /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -156,6 +157,7 @@
 				CE3472FE1CCEB64000EAB5EB /* Config.swift */,
 				CE3473001CCECA9F00EAB5EB /* LoginViewController.swift */,
 				CE3473021CCFD95900EAB5EB /* AlarmsViewController.swift */,
+				CE3473041CD15F0600EAB5EB /* Bridging-Header.h */,
 			);
 			path = TouchMobile;
 			sourceTree = "<group>";
@@ -408,6 +410,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -445,6 +448,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -465,6 +469,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = touch.TouchMobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 			};
 			name = Debug;
 		};
@@ -484,6 +489,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = touch.TouchMobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 			};
 			name = Release;
 		};

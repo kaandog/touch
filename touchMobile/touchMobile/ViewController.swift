@@ -11,6 +11,7 @@ import UIKit.UIGestureRecognizerSubclass
 import Alamofire
 import Parse
 import SwiftyJSON
+import pop
 
 let WS_URL = "http://touch-ws.herokuapp.com";
 let NODE_STORAGE_KEY = "node"
@@ -78,7 +79,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     func swiped(nodeName: String, distance:Int) {
-        Alamofire.request(.GET, WS_URL + "/swipe/" + nodeName + "/" + String(distance));
+        Alamofire.request(.GET, WS_URL + "/m/" + nodeName + "/" + String(distance));
     }
 
     func tappedView(sender:DopeRecognizer){
@@ -120,7 +121,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             print("ended")
             if initialTranslation != nil {
                 let distance = initialTranslation!.y - translation.y;
-                swiped(cell.nodeName, distance: Int(distance));
+                swiped(cell.node?.macAddress, distance: Int(distance));
             }
     
             let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
@@ -301,17 +302,24 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         // animation position over 1.0 second duration
             let curFrame = self.nodesCollectionView.frame
             prevPosition = curFrame.origin.y
-            UIView.animateWithDuration(0.2, animations: {
-                self.nodesCollectionView.frame = CGRectMake(curFrame.origin.x, -300, curFrame.width, curFrame.height)
-            })
+            
+            let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPositionY)
+            springAnimation.toValue =  NSValue(CGPoint: CGPointMake(10, 10));
+            springAnimation.velocity = NSValue(CGPoint: CGPointMake(1.1, 1.1))
+            springAnimation.springBounciness = 20.0
+            self.self.nodesCollectionView.pop_addAnimation(springAnimation, forKey: "springAnimation")
+            
             alarmsViewController!.updateForNode(node)
             alarmModeOn = true;
         }
         else {
-            UIView.animateWithDuration(0.2, animations: {
-                let curFrame = self.nodesCollectionView.frame
-                self.nodesCollectionView.frame = CGRectMake(curFrame.origin.x, self.prevPosition, curFrame.width, curFrame.height)
-            })
+
+            let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPositionY)
+            springAnimation.toValue =  NSValue(CGPoint: CGPointMake(10, prevPosition));
+            springAnimation.velocity = NSValue(CGPoint: CGPointMake(1.1, 1.1))
+            springAnimation.springBounciness = 20.0
+            self.self.nodesCollectionView.pop_addAnimation(springAnimation, forKey: "springAnimation")
+    
             alarmModeOn = false;
         }
         
