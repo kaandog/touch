@@ -23,7 +23,7 @@ SIGNAL(TRX24_RX_END_vect)
     int i;
     volatile uint8_t *rx_b = &TRXFBST;
     uint8_t rx_b_len = TST_RX_LENGTH-2;
-   
+
     printf("RX_DONE IRQ\r\n");
     for(i = 0; i < rx_b_len; i++)
     {
@@ -31,9 +31,9 @@ SIGNAL(TRX24_RX_END_vect)
     }
 
     printf("\r\n");
-   
+
     ACK_INTERRUPT(RX_END);
-    
+
     if (g_rx_callback)
     {
         g_rx_callback(g_rx_buf, rx_b_len);
@@ -61,7 +61,7 @@ void rf_trx_cmd_safe(uint16_t cmd)
     {
         status = GET_TRX_STATUS();
     } while(status == STATE_TRANSITION_IN_PROGRESS);
-    
+
     rf_trx_cmd(cmd);
 
     // wait for this state transition to finish
@@ -100,11 +100,11 @@ void rf_rx_packet(uint8_t *buffer, uint8_t *len)
 {
     int i, rx_len;
     volatile uint8_t *rx_buf = &TRXFBST;
-    
+
     /* TODO: maybe dynamic frame buffer protection */
     rx_len = TST_RX_LENGTH;
     //*len  = rx_len;
-    printf("rx_len = %d\r\n", rx_len); 
+    printf("rx_len = %d\r\n", rx_len);
     for (i = 0; i < rx_len; i++)
     {
         //buffer[i] = rx_buf[i];
@@ -134,15 +134,15 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
         printf("packet can't be NULL\n");
         return RF_ERROR;
     }
-   
-    // go into pll on, bus_tx can only be 
+
+    // go into pll on, bus_tx can only be
     // entered from this state
     rf_trx_cmd_safe(CMD_PLL_ON);
 
     tx_buf[0] = buf_len+2;
     for (i = 1; i-1 < buf_len; i++)
     {
-        printf("tx_buf[%d]=%c\r\n", i, buf[i-1]);
+        printf("tx_buf[%d]=%d\r\n", i, buf[i-1]);
         tx_buf[i] = buf[i-1];
     }
 
@@ -168,7 +168,7 @@ void rf_tx_start(void)
  */
 void rf_rx_on(void)
 {
-   rf_trx_cmd_safe(CMD_RX_ON); 
+   rf_trx_cmd_safe(CMD_RX_ON);
 }
 
 /* @brief transition in to trx_off

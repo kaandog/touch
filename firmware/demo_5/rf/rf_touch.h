@@ -2,9 +2,9 @@
  *  @brief rf touch packet defs
  */
 
-typedef struct touch_packet {
+typedef struct touch_packet_t {
     char cmd;
-    uint8_t data;
-    uint8_t node_id;
-} touch_packet;
+    int8_t data;
+    int8_t node_id;
+} touch_packet_t;
 

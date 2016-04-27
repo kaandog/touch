@@ -78,9 +78,9 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
         printf("Invalid buf_len size %d\r\n", buf_len);
         return;
     }
-    servo_on();
+    //servo_on();
     // delay until tranistor is saturated
-    _delay_ms(50);
+    //_delay_ms(50);
     servo_pos = buf[0];
     printf("servo_pos %c \r\n", servo_pos);
 
@@ -112,12 +112,18 @@ void rx_callback(uint8_t *buf, uint8_t buf_len)
             else
                 OCR1A = 535;
             break;
+        case '[':
+            servo_on();
+            break;
+        case ']':
+            servo_off();
+            break;
         default:
             break;
         }
     // delay until servo finishes rotation
-    _delay_ms(500);
-    servo_off();
+    //_delay_ms(500);
+    //servo_off();
 
     return;
 }

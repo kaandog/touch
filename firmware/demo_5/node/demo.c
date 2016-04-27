@@ -10,8 +10,13 @@
 #include <math.h>
 #define BAUD 115200
 #include <util/setbaud.h>
+#include <avr/pgmspace.h>
 
+#include "rf_touch.h"
 #include "rf.h"
+
+uint8_t flash_data[] PROGMEM;
+static uint8_t my_node_id = ;
 
 void uart_init(void) {
     UBRR0H = UBRRH_VALUE;
@@ -70,56 +75,12 @@ uint16_t adc_read(uint8_t ch)
     return (ADC);
 }
 
-void rx_callback(uint8_t *buf, uint8_t buf_len)
+void low_power_on(void)
 {
-    char servo_pos;
-    if (buf_len > 1)
-    {
-        printf("Invalid buf_len size %d\r\n", buf_len);
-        return;
-    }
-    servo_on();
-    // delay until tranistor is saturated
-    _delay_ms(50);
-    servo_pos = buf[0];
-    printf("servo_pos %c \r\n", servo_pos);
+}
 
-    switch(servo_pos)
-    {
-        case '1':
-            OCR1A = 133;
-            break;
-        case '2':
-            OCR1A = 200;
-            break;
-        case '3':
-            OCR1A = 316;
-            break;
-        case '4':
-            OCR1A = 425;
-            break;
-        case '5':
-            OCR1A = 533;
-        case 'q':
-            if (OCR1A >= 180)
-                OCR1A = OCR1A-30;
-            else
-                OCR1A = 150;
-            break;
-        case 'w':
-            if (OCR1A <= 500)
-                OCR1A = OCR1A+30;
-            else
-                OCR1A = 535;
-            break;
-        default:
-            break;
-        }
-    // delay until servo finishes rotation
-    _delay_ms(500);
-    servo_off();
-
-    return;
+void low_power_off(void)
+{
 }
 
 void servo_off(void)
@@ -132,19 +93,110 @@ void servo_on(void)
     PORTG |= (1<<0);
 }
 
+void led_on(void)
+{
+    PORTD &= ~(1<<4);
+}
+
+void led_off(void)
+{
+    PORTD |= (1<<4);
+}
+
+void rx_callback(uint8_t *buf, uint8_t buf_len)
+{
+    uint8_t temp_OCR1A;
+    touch_packet_t pkt;
+
+    if (buf_len != sizeof(touch_packet_t))
+    {
+        printf("Invalid buf_len size %d\r\n", buf_len);
+        led_on();
+        _delay_ms(100);
+        led_off();
+        _delay_ms(100);
+        led_on();
+        _delay_ms(100);
+        led_off();
+
+        return;
+    }
+
+    led_on();
+    servo_on();
+
+    pkt = *((touch_packet_t*) buf);
+
+
+    if (pkt.cmd == 'p')
+    {
+        switch(pkt.data)
+        {
+            case 1:
+                OCR1A = 133;
+                break;
+            case 2:
+                OCR1A = 200;
+                break;
+            case 3:
+                OCR1A = 316;
+                break;
+            case 4:
+                OCR1A = 425;
+                break;
+            case 5:
+                OCR1A = 533;
+                break;
+            default:
+                break;
+        }
+    }
+    else if (pkt.cmd == 'm')
+    {
+        temp_OCR1A = OCR1A;
+        temp_OCR1A += pkt.data;
+
+        // make sure the OCR1A is bounded
+        // to the servo's limits
+        if (temp_OCR1A > 533)
+        {
+            temp_OCR1A = 533;
+        }
+        else if (temp_OCR1A < 133)
+        {
+            temp_OCR1A = 133;
+        }
+
+        OCR1A = temp_OCR1A;
+    }
+    else if (pkt.cmd == 'l')
+    {
+        if (pkt.data)
+            low_power_on();
+        else
+            low_power_off();
+    }
+
+    // delay until servo finishes rotation
+    _delay_ms(500);
+    servo_off();
+
+    led_off();
+
+    return;
+}
+
 int main(void)
 {
     char input;
     uint8_t buffer[128];
     uint8_t len;
-    //uart_init();
-    //stdout = &uart_output;
-    //stdin  = &uart_input;
 
     // Setup ports
     DDRB |= (1<<5);
     DDRG |= (1<<0);
     DDRB |= (1<<2);
+    DDRD |= (1<<4);
 
     TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);
     TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10);
@@ -152,8 +204,9 @@ int main(void)
 
     rf_init(rx_callback, NULL);
 
-    printf("Starting loop...\r\n");
+    led_off();
     rf_rx_on();
+
     while(1)
     {
     }

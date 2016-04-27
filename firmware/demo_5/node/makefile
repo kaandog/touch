@@ -77,7 +77,6 @@ program:
 	make clean
 	make
 	avrdude -pm128rfa1 -c avrispmkII -P usb -U flash:w:$(PROGRAM).hex
-
 	#avrdude -b 57600 -F -p atmega128 -P $(PORT) -c arduino -V -U flash:w:$(PROGRAM).hex
 
 atmega328_isp: atmega328
