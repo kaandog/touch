@@ -9,11 +9,17 @@
 import UIKit
 import UIKit.UIGestureRecognizerSubclass
 import Alamofire
+import Parse
+import SwiftyJSON
 
 let WS_URL = "http://touch-ws.herokuapp.com";
 let NODE_STORAGE_KEY = "node"
 
-
+class Node {
+    var name:String = "Unnamed"
+    var macAddress:String = ""
+    var objectId:String = ""
+}
 
 class DopeRecognizer: UILongPressGestureRecognizer
 {
@@ -34,9 +40,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
     @IBOutlet weak var nodesCollectionView: UICollectionView!
     @IBOutlet weak var resetBtn: UIButton!
+    @IBOutlet weak var alarmsTableView: UITableView!
+
+    var nodesArray = [Node]()
+    var alarmsViewController:AlarmsViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.alarmsViewController = AlarmsViewController()
+
+        self.alarmsTableView.delegate = alarmsViewController
+        self.alarmsTableView.dataSource = alarmsViewController
+        self.alarmsViewController!.alarmsTableView = self.alarmsTableView
+        retrieveAllNodes()
     }
 
     override func didReceiveMemoryWarning() {
@@ -62,12 +78,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     func swiped(nodeName: String, distance:Int) {
-        Alamofire.request(.GET, WS_URL + "/swipe/" + nodeName + "/" + distance);
+        Alamofire.request(.GET, WS_URL + "/swipe/" + nodeName + "/" + String(distance));
     }
 
     func tappedView(sender:DopeRecognizer){
-
-        let cell:NodeCell = sender.view as! NodeCell;
+    
+        let cell:NodeCell = sender.view?.superview?.superview as! NodeCell;
         let translation = sender.locationInView(cell);
         cell.touchDotImg.frame.origin.x =  translation.x - cell.touchDotImg.frame.width/2;
         cell.touchDotImg.frame.origin.y = translation.y - cell.touchDotImg.frame.height/2;
@@ -104,7 +120,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             print("ended")
             if initialTranslation != nil {
                 let distance = initialTranslation!.y - translation.y;
-                swiped(cell.nodeName, distance);
+                swiped(cell.nodeName, distance: Int(distance));
             }
     
             let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
@@ -132,7 +148,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             
             let firstTextField = alertController.textFields![0] as UITextField
             let nodeName = firstTextField.text;
-            self.storeNewNode(nodeName!);
+            let secondTextField = alertController.textFields![1] as UITextField
+            let macAddress = secondTextField.text;
+            self.storeNewNode(nodeName!, macAddress: macAddress!);
             self.nodesCollectionView.reloadData();
             let nodes = self.retrieveAllNodes();
             print(nodes);
@@ -146,6 +164,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         alertController.addTextFieldWithConfigurationHandler {(textField: UITextField!) in
             textField.placeholder = "Node id"
         };
+        alertController.addTextFieldWithConfigurationHandler {(textField: UITextField!) in
+            textField.placeholder = "Mac address"
+        };
         alertController.addAction(saveAction);
         alertController.addAction(cancelAction);
 
@@ -154,37 +175,63 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
 
 
-    func retrieveAllNodes () -> NSMutableArray {
-        let defaults = NSUserDefaults.standardUserDefaults();
+    func retrieveAllNodes () {
+        
+        let currentUser = PFUser.currentUser()
+        if currentUser != nil {
+            
+            PFCloud.callFunctionInBackground("getAllNodes", withParameters: [:]) {
+                (nodes, error) in
+                if (error == nil) {
+                    self.transformNodeResults(nodes!)
+                    self.nodesCollectionView.reloadData()
+                }
+                else {
+                    print("Error with getting nodes")
+                }
+            }
 
-        //read
-        if let nodesArray : AnyObject = defaults.objectForKey(NODE_STORAGE_KEY) {
-            let readArray = nodesArray as! NSMutableArray;
-            return readArray;
+        } else {
+            dispatch_async(dispatch_get_main_queue()){
+                
+                self.performSegueWithIdentifier("displayLoginView", sender: self)
+                
+            }
         }
-        else {
-            return [];
+    }
+    
+    func transformNodeResults (nodes:AnyObject) {
+        self.nodesArray = [Node]()
+        let nodesJSON = JSON(nodes);
+        
+        for (_,node) in nodesJSON {
+            let n = Node()
+            n.name = node["name"].stringValue
+            n.macAddress = node["macAddress"].stringValue
+            n.objectId = node["objectId"].stringValue
+            self.nodesArray.append(n)
         }
     }
 
     // STORAGE
 
-    func storeNewNode (nodeName:String) {
-        let currentArray : NSMutableArray = self.retrieveAllNodes();
-        let currentMutableArray = NSMutableArray(array: currentArray)
-        currentMutableArray.addObject(nodeName);
-
-        //save
-        let defaults = NSUserDefaults.standardUserDefaults();
-        defaults.setObject(currentMutableArray, forKey: NODE_STORAGE_KEY);
-        defaults.synchronize();
-    }
-    
-    func flushNodes () {
-        //save
-        let defaults = NSUserDefaults.standardUserDefaults();
-        defaults.setObject([], forKey: NODE_STORAGE_KEY);
-        defaults.synchronize();
+    func storeNewNode (nodeName:String, macAddress:String) {
+        PFCloud.callFunctionInBackground("createNewNode", withParameters:
+            ["name": nodeName, "macAddress": macAddress]) {
+            (nodes, error) in
+            if (error == nil) {
+                self.transformNodeResults(nodes!);
+                self.nodesCollectionView.reloadData()
+            }
+            else {
+                print("Error with getting nodes")
+            }
+        }
+        
+        let newNode = Node()
+        newNode.name = nodeName
+        newNode.macAddress = macAddress
+        self.nodesArray.append(newNode)
     }
 
     
@@ -199,31 +246,31 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     //2
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let currentArray : NSMutableArray = self.retrieveAllNodes();
-        return currentArray.count;
+        return self.nodesArray.count;
     }
     
     //3
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let currentArray : NSMutableArray = self.retrieveAllNodes();
+        let currentArray : [Node] = self.nodesArray
 
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! NodeCell;
-        cell.nodeName = currentArray[indexPath.item] as! String;
-        cell.nameLabel.text = currentArray[indexPath.item] as! String;
-        
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(reuseIdentifier, forIndexPath: indexPath) as! NodeCell
+        cell.nodeName = currentArray[indexPath.item].name
+        cell.nameLabel.text = currentArray[indexPath.item].name
+        cell.parentViewController = self
+        cell.node = currentArray[indexPath.item]
         let gestureRec = DopeRecognizer()
-        gestureRec.addTarget(self, action: Selector("tappedView:"));
+        gestureRec.addTarget(self, action: #selector(ViewController.tappedView(_:)));
         gestureRec.delegate = self;
         gestureRec.minimumPressDuration = 0.05;
         gestureRec.numberOfTouchesRequired = 1;
-        cell.addGestureRecognizer(gestureRec);
+        cell.touchAreaView.addGestureRecognizer(gestureRec);
         // Configure the cell
         return cell
     }
 
     func gestureRecognizer(sender:UIGestureRecognizer, movedWithTouches touches:Set<UITouch>, Event event:UIEvent) {
         
-        let cell:NodeCell = sender.view as! NodeCell;
+        let cell:NodeCell = sender.view?.superview?.superview as! NodeCell;
         print(touches.count);
         for touch in touches {
 
@@ -242,8 +289,33 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
 
     @IBAction func tappedResetBtn(sender: AnyObject) {
-        flushNodes();
-        self.nodesCollectionView.reloadData();
+//        self.showAlarmsViewForNode(nil)
+    }
+    
+    var alarmModeOn = false
+    var prevPosition:CGFloat = 0.0
+
+    func toggleAlarmsViewForNode (node:Node) -> Bool {
+        
+        if (!alarmModeOn) {
+        // animation position over 1.0 second duration
+            let curFrame = self.nodesCollectionView.frame
+            prevPosition = curFrame.origin.y
+            UIView.animateWithDuration(0.2, animations: {
+                self.nodesCollectionView.frame = CGRectMake(curFrame.origin.x, -300, curFrame.width, curFrame.height)
+            })
+            alarmsViewController!.updateForNode(node)
+            alarmModeOn = true;
+        }
+        else {
+            UIView.animateWithDuration(0.2, animations: {
+                let curFrame = self.nodesCollectionView.frame
+                self.nodesCollectionView.frame = CGRectMake(curFrame.origin.x, self.prevPosition, curFrame.width, curFrame.height)
+            })
+            alarmModeOn = false;
+        }
+        
+        return alarmModeOn
     }
 
 }
@@ -252,31 +324,23 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 class NodeCell: UICollectionViewCell {
 
     @IBOutlet weak var nameLabel: UILabel!
-
+    var node:Node?;
     var nodeName = "";
-
+    var parentViewController:ViewController?;
     @IBOutlet weak var touchDotImg: UIImageView!
-
-
-    func retrieveAllNodes () -> NSMutableArray {
-        let defaults = NSUserDefaults.standardUserDefaults();
+    @IBOutlet var addAlarmBtn: UIButton!
+    @IBOutlet var touchAreaView: UIView!
+    
+    
+    @IBAction func tappedAddAlarm(sender: AnyObject) {
+        let isOnAlarmsMode:Bool = (self.parentViewController?.toggleAlarmsViewForNode(self.node!))!
         
-        //read
-        if let nodesArray : AnyObject = defaults.objectForKey(NODE_STORAGE_KEY) {
-            let readArray = nodesArray as! NSMutableArray;
-            return readArray;
+        if (isOnAlarmsMode == true) {
+            addAlarmBtn.setTitle("Done", forState: UIControlState.Normal)
         }
         else {
-            return [];
+            addAlarmBtn.setTitle("Set Alarms", forState: UIControlState.Normal)
         }
-    }
-
-    @IBAction func tappedUpBtn(sender: UIButton) {
-        tappedUp(self.nodeName);
-    }
-
-    @IBAction func tappedDownBtn(sender: UIButton) {
-        tappedDown(self.nodeName);
     }
 
 }

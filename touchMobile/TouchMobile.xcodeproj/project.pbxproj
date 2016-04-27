@@ -14,6 +14,19 @@
 		CE1BB3BE1C98ADF600F74F86 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE1BB3BD1C98ADF600F74F86 /* Assets.xcassets */; };
 		CE1BB3C11C98ADF600F74F86 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE1BB3BF1C98ADF600F74F86 /* LaunchScreen.storyboard */; };
 		CE1BB3CC1C98ADF600F74F86 /* TouchMobileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1BB3CB1C98ADF600F74F86 /* TouchMobileTests.swift */; };
+		CE3472EB1CCEB48200EAB5EB /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472EA1CCEB48200EAB5EB /* AudioToolbox.framework */; };
+		CE3472ED1CCEB48700EAB5EB /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472EC1CCEB48700EAB5EB /* CFNetwork.framework */; };
+		CE3472EF1CCEB49600EAB5EB /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472EE1CCEB49600EAB5EB /* CoreGraphics.framework */; };
+		CE3472F11CCEB49C00EAB5EB /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472F01CCEB49C00EAB5EB /* CoreLocation.framework */; };
+		CE3472F31CCEB4A500EAB5EB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472F21CCEB4A500EAB5EB /* QuartzCore.framework */; };
+		CE3472F51CCEB4AA00EAB5EB /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472F41CCEB4AA00EAB5EB /* Security.framework */; };
+		CE3472F71CCEB4B000EAB5EB /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472F61CCEB4B000EAB5EB /* StoreKit.framework */; };
+		CE3472F91CCEB4B400EAB5EB /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472F81CCEB4B400EAB5EB /* SystemConfiguration.framework */; };
+		CE3472FB1CCEB4BC00EAB5EB /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472FA1CCEB4BC00EAB5EB /* libz.tbd */; };
+		CE3472FD1CCEB4C400EAB5EB /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3472FC1CCEB4C400EAB5EB /* libsqlite3.tbd */; };
+		CE3472FF1CCEB64000EAB5EB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3472FE1CCEB64000EAB5EB /* Config.swift */; };
+		CE3473011CCECA9F00EAB5EB /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3473001CCECA9F00EAB5EB /* LoginViewController.swift */; };
+		CE3473031CCFD95900EAB5EB /* AlarmsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE3473021CCFD95900EAB5EB /* AlarmsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +52,19 @@
 		CE1BB3C71C98ADF600F74F86 /* TouchMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TouchMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE1BB3CB1C98ADF600F74F86 /* TouchMobileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchMobileTests.swift; sourceTree = "<group>"; };
 		CE1BB3CD1C98ADF600F74F86 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CE3472EA1CCEB48200EAB5EB /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		CE3472EC1CCEB48700EAB5EB /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		CE3472EE1CCEB49600EAB5EB /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		CE3472F01CCEB49C00EAB5EB /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		CE3472F21CCEB4A500EAB5EB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		CE3472F41CCEB4AA00EAB5EB /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		CE3472F61CCEB4B000EAB5EB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		CE3472F81CCEB4B400EAB5EB /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		CE3472FA1CCEB4BC00EAB5EB /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		CE3472FC1CCEB4C400EAB5EB /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		CE3472FE1CCEB64000EAB5EB /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = touchMobile/Config.swift; sourceTree = SOURCE_ROOT; };
+		CE3473001CCECA9F00EAB5EB /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		CE3473021CCFD95900EAB5EB /* AlarmsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlarmsViewController.swift; sourceTree = "<group>"; };
 		EC32FF7F361C008CC9B81E5D /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -47,6 +73,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE3472FD1CCEB4C400EAB5EB /* libsqlite3.tbd in Frameworks */,
+				CE3472FB1CCEB4BC00EAB5EB /* libz.tbd in Frameworks */,
+				CE3472F91CCEB4B400EAB5EB /* SystemConfiguration.framework in Frameworks */,
+				CE3472F71CCEB4B000EAB5EB /* StoreKit.framework in Frameworks */,
+				CE3472F51CCEB4AA00EAB5EB /* Security.framework in Frameworks */,
+				CE3472F31CCEB4A500EAB5EB /* QuartzCore.framework in Frameworks */,
+				CE3472F11CCEB49C00EAB5EB /* CoreLocation.framework in Frameworks */,
+				CE3472EF1CCEB49600EAB5EB /* CoreGraphics.framework in Frameworks */,
+				CE3472ED1CCEB48700EAB5EB /* CFNetwork.framework in Frameworks */,
+				CE3472EB1CCEB48200EAB5EB /* AudioToolbox.framework in Frameworks */,
 				946867F0DE21A95A53237D15 /* Pods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -73,6 +109,16 @@
 		6B08E1AB8AF6245B1C78B057 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CE3472FC1CCEB4C400EAB5EB /* libsqlite3.tbd */,
+				CE3472FA1CCEB4BC00EAB5EB /* libz.tbd */,
+				CE3472F81CCEB4B400EAB5EB /* SystemConfiguration.framework */,
+				CE3472F61CCEB4B000EAB5EB /* StoreKit.framework */,
+				CE3472F41CCEB4AA00EAB5EB /* Security.framework */,
+				CE3472F21CCEB4A500EAB5EB /* QuartzCore.framework */,
+				CE3472F01CCEB49C00EAB5EB /* CoreLocation.framework */,
+				CE3472EE1CCEB49600EAB5EB /* CoreGraphics.framework */,
+				CE3472EC1CCEB48700EAB5EB /* CFNetwork.framework */,
+				CE3472EA1CCEB48200EAB5EB /* AudioToolbox.framework */,
 				EC32FF7F361C008CC9B81E5D /* Pods.framework */,
 			);
 			name = Frameworks;
@@ -107,6 +153,9 @@
 				CE1BB3BD1C98ADF600F74F86 /* Assets.xcassets */,
 				CE1BB3BF1C98ADF600F74F86 /* LaunchScreen.storyboard */,
 				CE1BB3C21C98ADF600F74F86 /* Info.plist */,
+				CE3472FE1CCEB64000EAB5EB /* Config.swift */,
+				CE3473001CCECA9F00EAB5EB /* LoginViewController.swift */,
+				CE3473021CCFD95900EAB5EB /* AlarmsViewController.swift */,
 			);
 			path = TouchMobile;
 			sourceTree = "<group>";
@@ -273,8 +322,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE3473011CCECA9F00EAB5EB /* LoginViewController.swift in Sources */,
 				CE1BB3B91C98ADF600F74F86 /* ViewController.swift in Sources */,
 				CE1BB3B71C98ADF600F74F86 /* AppDelegate.swift in Sources */,
+				CE3472FF1CCEB64000EAB5EB /* Config.swift in Sources */,
+				CE3473031CCFD95900EAB5EB /* AlarmsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +456,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = TouchMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = touch.TouchMobile;
@@ -419,6 +475,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = TouchMobile/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = touch.TouchMobile;
