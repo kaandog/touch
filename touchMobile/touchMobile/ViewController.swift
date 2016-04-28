@@ -121,7 +121,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             print("ended")
             if initialTranslation != nil {
                 let distance = initialTranslation!.y - translation.y;
-                swiped(cell.node?.macAddress, distance: Int(distance));
+                swiped((cell.node?.macAddress)!, distance: Int(distance));
             }
     
             let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
@@ -301,12 +301,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if (!alarmModeOn) {
         // animation position over 1.0 second duration
             let curFrame = self.nodesCollectionView.frame
-            prevPosition = curFrame.origin.y
+            prevPosition = curFrame.origin.y + (curFrame.height / 2)
             
             let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPositionY)
-            springAnimation.toValue =  NSValue(CGPoint: CGPointMake(10, 10));
-            springAnimation.velocity = NSValue(CGPoint: CGPointMake(1.1, 1.1))
-            springAnimation.springBounciness = 20.0
+            springAnimation.toValue =  NSValue(CGPoint: CGPointMake(10, 0));
+            springAnimation.velocity = NSValue(CGPoint: CGPointMake(0.3, 0.3))
+            springAnimation.springBounciness = 14.0
             self.self.nodesCollectionView.pop_addAnimation(springAnimation, forKey: "springAnimation")
             
             alarmsViewController!.updateForNode(node)
@@ -315,10 +315,10 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         else {
 
             let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPositionY)
-            springAnimation.toValue =  NSValue(CGPoint: CGPointMake(10, prevPosition));
-            springAnimation.velocity = NSValue(CGPoint: CGPointMake(1.1, 1.1))
-            springAnimation.springBounciness = 20.0
-            self.self.nodesCollectionView.pop_addAnimation(springAnimation, forKey: "springAnimation")
+            springAnimation.toValue =  NSValue(CGPoint: CGPointMake(prevPosition, 0));
+            springAnimation.velocity = NSValue(CGPoint: CGPointMake(0.5, 0.5))
+            springAnimation.springBounciness = 14.0
+            self.self.nodesCollectionView.pop_addAnimation(springAnimation, forKey: "springAnimationDown")
     
             alarmModeOn = false;
         }
