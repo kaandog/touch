@@ -16,8 +16,7 @@ ser = serial.Serial(
        )
 counter=0
 
-
 while 1:
-   ser.write('Write counter: %d \n'%(counter))
+   ser.write("%d"%(counter%5))
    time.sleep(1)
    counter += 1
