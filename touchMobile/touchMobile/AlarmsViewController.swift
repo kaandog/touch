@@ -11,6 +11,40 @@ import UIKit
 import Parse
 import SwiftyJSON
 
+extension JSON {
+
+    
+    public var dateTime: NSDate? {
+        get {
+            switch self.type {
+            case .String:
+                print(self.object as! String)
+                return Formatter.jsonDateTimeFormatter.dateFromString(self.object as! String)
+            default:
+                print(self.object as! String)
+                return nil
+            }
+        }
+    }
+    
+}
+
+class Formatter {
+    
+    private static var internalJsonDateFormatter: NSDateFormatter?
+    private static var internalJsonDateTimeFormatter: NSDateFormatter?
+
+    static var jsonDateTimeFormatter: NSDateFormatter {
+        if (internalJsonDateTimeFormatter == nil) {
+            internalJsonDateTimeFormatter = NSDateFormatter()
+            internalJsonDateTimeFormatter!.dateFormat = "yyyy-MM-dd hh:mm:ss.SSSSxxx"
+        }
+        return internalJsonDateTimeFormatter!
+    }
+    
+}
+
+
 class Alarm {
     var name:String?
     var time:NSDate?
@@ -22,6 +56,7 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
     let cellIdentifier = "AlarmTableViewCell"
     var alarmsTableView:UITableView? = nil
     var alarms:[Alarm] = []
+    var currentNode:Node?
 
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
@@ -58,7 +93,8 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
             if (error == nil) {
                 self.transformAlarmResults(alarms!)
                 self.alarmsTableView!.reloadData()
-                self.displayTable();
+                self.currentNode = node
+                self.displayTable()
             }
             else {
                 print("Error with getting alarms")
@@ -76,8 +112,10 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
         
         for (_,alarm) in alarmsJSON {
             let a = Alarm()
+            
             a.name = alarm["name"].stringValue
-            a.time = dateFormatter.dateFromString(alarm["time"].stringValue)
+            a.time = NSDate(timeIntervalSince1970: alarm["datetime"].doubleValue)
+
             self.alarms.append(a)
         }
     }

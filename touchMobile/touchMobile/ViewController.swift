@@ -13,7 +13,7 @@ import Parse
 import SwiftyJSON
 import pop
 
-let WS_URL = "http://touch-ws.herokuapp.com";
+let WS_URL = "http://touch-mobile-cloud.herokuapp.com";
 let NODE_STORAGE_KEY = "node"
 
 class Node {
@@ -42,6 +42,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var nodesCollectionView: UICollectionView!
     @IBOutlet weak var resetBtn: UIButton!
     @IBOutlet weak var alarmsTableView: UITableView!
+    @IBOutlet var addAlarmBtn: UIButton!
+    @IBOutlet var datePicker: UIDatePicker!
+    @IBOutlet var saveAlarmBtn: UIButton!
 
     var nodesArray = [Node]()
     var alarmsViewController:AlarmsViewController?
@@ -67,16 +70,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
     var initialTranslation:CGPoint? = nil;
     let bufferTranslation = 0;
-    
-    func tappedUp(nodeName: String) {
-        print( WS_URL + "/up/" + nodeName)
-        Alamofire.request(.GET, WS_URL + "/up/" + nodeName);
-    }
-    
-    func tappedDown(nodeName: String) {
-        print( WS_URL + "/down/" + nodeName)
-        Alamofire.request(.GET, WS_URL + "/down/" + nodeName);
-    }
     
     func swiped(nodeName: String, distance:Int) {
         Alamofire.request(.GET, WS_URL + "/m/" + nodeName + "/" + String(distance));
@@ -108,11 +101,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 if (distance > 50) {
                     //send up
                     initialTranslation = translation;
+                    self.swiped(cell.nodeName, distance: 20);
                 }
                 else if (distance < -50) {
                     //send down
                     initialTranslation = translation;
-                    tappedDown(cell.nodeName);
+                    self.swiped(cell.nodeName, distance: -20);
                 }
                 
             }
@@ -194,9 +188,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
         } else {
             dispatch_async(dispatch_get_main_queue()){
-                
                 self.performSegueWithIdentifier("displayLoginView", sender: self)
-                
             }
         }
     }
@@ -290,7 +282,10 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
 
     @IBAction func tappedResetBtn(sender: AnyObject) {
-//        self.showAlarmsViewForNode(nil)
+        PFUser.logOut()
+        dispatch_async(dispatch_get_main_queue()){
+            self.performSegueWithIdentifier("displayLoginView", sender: self)
+        }
     }
     
     var alarmModeOn = false
@@ -325,6 +320,24 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         
         return alarmModeOn
     }
+    
+    @IBAction func tappedAddAlarm(sender: AnyObject) {
+        self.alarmsTableView.hidden = true
+        self.addAlarmBtn.hidden = true
+        self.datePicker.hidden = false
+        self.saveAlarmBtn.hidden = false
+    }
+    
+    @IBAction func tappedSaveAlarm(sender: AnyObject) {
+        let pickedDate = datePicker.date
+        
+        PFCloud.callFunctionInBackground("createNewAlarm", withParameters:["datetime":pickedDate.timeIntervalSince1970, "nodeId" : (self.alarmsViewController?.currentNode?.objectId)!]){
+            (alarms, error) in
+
+            self.alarmsViewController?.transformAlarmResults(alarms!)
+        }
+    }
+    
 
 }
 
