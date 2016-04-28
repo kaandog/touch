@@ -17,6 +17,7 @@ typedef struct touch_packet_t {
 } touch_packet_t;
 
 
+void touch_node_main(void);
 uint8_t touch_tx(char cmd, int16_t data, uint8_t dest_id);
 uint8_t touch_tx_with_auto_retry(char cmd, int16_t data, uint8_t dest_id, uint8_t retry_cnt);
 uint8_t touch_tx_with_ack(char cmd, int16_t data, uint8_t dest_id);

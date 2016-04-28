@@ -6,16 +6,20 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#include <avr/sleep.h>
 #include <util/delay.h>
 
 volatile uint8_t node_acks[MAX_NODES];
+volatile uint8_t low_power_mode = 0;
 
 void low_power_on(void)
 {
+    low_power_mode = 1;
 }
 
 void low_power_off(void)
 {
+    low_power_mode=0;
 }
 
 void servo_off(void)
@@ -40,12 +44,12 @@ void led_off(void)
 
 void rx_node_callback(uint8_t *buf, uint8_t buf_len)
 {
-    uint16_t temp_OCR1A;
+    int16_t temp_OCR1A;
     touch_packet_t pkt;
 
     if (buf_len != sizeof(touch_packet_t))
     {
-        printf("Invalid buf_len size %d\r\n", buf_len);
+        DEBUG_PRINT("Invalid buf_len size %d\r\n", buf_len);
         led_on();
         _delay_ms(100);
         led_off();
@@ -92,7 +96,7 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
         {
             temp_OCR1A = 133;
         }
-        OCR1A = temp_OCR1A;
+        OCR1A = (uint16_t) temp_OCR1A;
 
         // send a packet back with our new servo pos
         touch_tx('i', (int16_t) (temp_OCR1A-133), GATEWAY_ID);
@@ -108,9 +112,15 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
     {
 
         if (pkt.data)
+        {
             low_power_on();
+            touch_tx('i', (int16_t) (OCR1A-133), GATEWAY_ID);
+        }
         else
+        {
             low_power_off();
+            touch_tx('i', (int16_t) (OCR1A-133), GATEWAY_ID);
+        }
     }
 
 
@@ -125,7 +135,7 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
     touch_packet_t pkt;
     if (buf_len != sizeof(touch_packet_t))
     {
-        printf("Invalid buf_len size %d\r\n", buf_len);
+        DEBUG_PRINT("Invalid buf_len size %d\r\n", buf_len);
         return;
     }
 
@@ -145,7 +155,7 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
         // if this is an info packet
         if (pkt.cmd == 'i')
         {
-            printf("%d:p,%d\r\n", pkt.src_node_id, pkt.data);
+            printf("%d:p,%d\n", pkt.src_node_id, pkt.data);
         }
         node_acks[pkt.src_node_id] = 1;
     }
@@ -191,10 +201,10 @@ uint8_t touch_tx(char cmd, int16_t data, uint8_t dest_id)
     pkt.dest_node_id = (uint8_t) dest_id;
     pkt.src_node_id = NODE_ID;
 
-    printf("pkt.cmd = %c\r\n", pkt.cmd);
-    printf("pkt.data = %d\r\n", pkt.data);
-    printf("pkt.dest_node_id = %d\r\n", pkt.dest_node_id);
-    printf("pkt.src_node_id = %d\r\n", pkt.dest_node_id);
+    DEBUG_PRINT("pkt.cmd = %c\r\n", pkt.cmd);
+    DEBUG_PRINT("pkt.data = %d\r\n", pkt.data);
+    DEBUG_PRINT("pkt.dest_node_id = %d\r\n", pkt.dest_node_id);
+    DEBUG_PRINT("pkt.src_node_id = %d\r\n", pkt.dest_node_id);
 
 
     rf_tx_packet_nonblocking((uint8_t*) &pkt, sizeof(touch_packet_t));
@@ -216,13 +226,71 @@ uint8_t touch_tx_with_ack(char cmd, int16_t data, uint8_t dest_id)
         _delay_ms(1);
         if (node_acks[dest_id])
         {
-            printf("cnt: %d\r\n", cnt);
+            DEBUG_PRINT("cnt: %d\r\n", cnt);
             node_acks[dest_id] = 0;
             return TOUCH_SUCCESS;
         }
     }
     node_acks[dest_id] = 0;
     return TOUCH_ERROR;
+}
+
+ISR(SCNT_CMP1_vect)
+{
+    led_off();
+}
+
+void enable_sc_wakeup(void)
+{
+    ASSR |= (1<<AS2);
+
+    //sleep for 5 minutes
+    SCOCR1HH = 0x01;
+    SCOCR1HL = 0x2c;
+    SCOCR1LH = 0x0;
+    SCOCR1LL = 0x0;
+
+    SCCNTHH = 0x0;
+    SCCNTHL = 0x0;
+    SCCNTLH = 0x0;
+    SCCNTLL = 0x0;
+
+    SCCR0 = (1<<SCEN) | (1<<SCCKSEL);
+    while(SCSR & (1<<SCBSY));
+    SCIRQM = (1<<IRQMCP1);
+}
+
+void disable_sc_wakeup(void)
+{
+    SCCR0 = 0;
+    SCIRQM = 0;
+}
+
+void touch_node_main(void)
+{
+    cli();
+    if (low_power_mode)
+    {
+        cli();
+
+        // go to sleep
+        rf_sleep();
+        enable_sc_wakeup();
+        led_on();
+        sei();
+        set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+        sleep_enable();
+        sleep_cpu();
+        // wakeup
+
+        sleep_disable();
+        led_off();
+        disable_sc_wakeup();
+        rf_wake();
+        touch_tx_with_auto_retry('w', OCR1A-133, GATEWAY_ID, 3);
+        low_power_mode = 0;
+    }
+    sei();
 }
 
 void touch_init(uint8_t is_gw)
@@ -250,5 +318,6 @@ void touch_init(uint8_t is_gw)
 
         rf_init(rx_node_callback, NULL);
         rf_rx_on();
+
     }
 }

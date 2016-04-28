@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <util/delay.h>
 #include <stdio.h>
@@ -12,7 +13,6 @@
 
 #include "rf_touch.h"
 #include "rf.h"
-
 
 void uart_init(void) {
     UBRR0H = UBRRH_VALUE;
@@ -77,5 +77,6 @@ int main(void)
     touch_init(0);
     while(1)
     {
+        touch_node_main();
     }
 }

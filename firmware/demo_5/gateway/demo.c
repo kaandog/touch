@@ -13,8 +13,6 @@
 #include "rf_touch.h"
 #include "rf.h"
 
-
-
 void uart_init(void) {
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
@@ -62,16 +60,13 @@ int main(void)
         buf_i = 0;
         input = getchar();
         while (input != '\n' && input != '\r' && buf_i < sizeof(buffer)) {
-            printf("%c", input);
             buffer[buf_i++]= input;
             input = getchar();
         }
         buffer[buf_i++] = '\0';
-        printf("\r\n");
 
         if (sscanf(buffer, " %c,%d,%d",&cmd, &data, &dest_id) != 3)
         {
-            printf("Invalid line!\r\n");
             continue;
         }
 

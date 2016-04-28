@@ -24,13 +24,10 @@ SIGNAL(TRX24_RX_END_vect)
     volatile uint8_t *rx_b = &TRXFBST;
     uint8_t rx_b_len = TST_RX_LENGTH-2;
 
-    printf("RX_DONE IRQ\r\n");
     for(i = 0; i < rx_b_len; i++)
     {
         g_rx_buf[i] = rx_b[i];
     }
-
-    printf("\r\n");
 
     ACK_INTERRUPT(RX_END);
 
@@ -44,7 +41,6 @@ SIGNAL(TRX24_RX_END_vect)
 
 SIGNAL(TRX24_TX_END_vect)
 {
-    printf("TX_DONE IRQ\r\n");
     ACK_INTERRUPT(TX_END);
     rf_trx_cmd(CMD_RX_ON);
     return;
@@ -96,24 +92,6 @@ void rf_trx_cmd(uint16_t cmd)
     TRX_STATE = cmd | (TRX_STATE & ~TRX_CMD_MASK);
 }
 
-void rf_rx_packet(uint8_t *buffer, uint8_t *len)
-{
-    int i, rx_len;
-    volatile uint8_t *rx_buf = &TRXFBST;
-
-    /* TODO: maybe dynamic frame buffer protection */
-    rx_len = TST_RX_LENGTH;
-    //*len  = rx_len;
-    printf("rx_len = %d\r\n", rx_len);
-    for (i = 0; i < rx_len; i++)
-    {
-        //buffer[i] = rx_buf[i];
-        printf("%c", (char)rx_buf[i]);
-    }
-    printf("\r\n");
-
-}
-
 /* @ brief tx's a packet
  *
  *  Max length of packet is 120 for now due to crc and other stuff
@@ -125,13 +103,11 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
 
     if (buf_len >= RF_MAX_PACKET_LEN)
     {
-        printf("packet too long\n");
         return RF_ERROR;
     }
 
     if (buf == NULL)
     {
-        printf("packet can't be NULL\n");
         return RF_ERROR;
     }
 
@@ -142,7 +118,6 @@ int rf_tx_packet_nonblocking(uint8_t *buf, uint8_t buf_len)
     tx_buf[0] = buf_len+2;
     for (i = 1; i-1 < buf_len; i++)
     {
-        printf("tx_buf[%d]=%d\r\n", i, buf[i-1]);
         tx_buf[i] = buf[i-1];
     }
 
@@ -206,13 +181,6 @@ void rf_init(void *rx_callback, void* tx_callback)
 
     // TODO: on-chip debug system must be disabled for best performance
     rf_enable_int();
-
-    //dynamic buffer protection
-    //TRX_CTRL_2 |= (1 << RX_SAFE_MODE);
-
-    // set the mac address of the node
-    // SHORT_ADDR_0 = NODE_ID & 0xff;
-    // SHORT_ADDR_1 = (NODE_ID >> 8) 0xff;
 
     rf_trx_cmd_safe(CMD_PLL_ON);
     do
