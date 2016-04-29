@@ -124,16 +124,24 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="G9N-qO-0IY">
-                                                    <rect key="frame" x="66" y="362" width="189" height="30"/>
+                                                    <rect key="frame" x="0.0" y="362" width="189" height="30"/>
                                                     <state key="normal" title="Set Alarms"/>
                                                     <connections>
                                                         <action selector="tappedAddAlarm:" destination="hX5-xA-5r0" eventType="touchUpInside" id="WXp-Aq-XAI"/>
+                                                    </connections>
+                                                </button>
+                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eK1-eX-1Ql">
+                                                    <rect key="frame" x="265" y="362" width="30" height="30"/>
+                                                    <state key="normal" title="LP"/>
+                                                    <connections>
+                                                        <action selector="tappedLpBtn:" destination="hX5-xA-5r0" eventType="touchUpInside" id="Bbo-OJ-83Q"/>
                                                     </connections>
                                                 </button>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <constraints>
+                                            <constraint firstItem="G9N-qO-0IY" firstAttribute="centerX" secondItem="hX5-xA-5r0" secondAttribute="centerX" constant="-0.5" id="8gg-Dg-UbZ"/>
                                             <constraint firstItem="JfG-kW-wyt" firstAttribute="leading" secondItem="hX5-xA-5r0" secondAttribute="leadingMargin" id="JXx-48-YfE"/>
                                             <constraint firstAttribute="trailingMargin" secondItem="69F-LU-kQ1" secondAttribute="trailing" id="MH7-cJ-OTC"/>
                                             <constraint firstItem="JfG-kW-wyt" firstAttribute="centerY" secondItem="hX5-xA-5r0" secondAttribute="centerY" constant="0.5" id="ORp-2P-MaB"/>
@@ -143,8 +151,15 @@
                                             <constraint firstItem="69F-LU-kQ1" firstAttribute="leading" secondItem="hX5-xA-5r0" secondAttribute="leadingMargin" id="i7s-Ki-PNN"/>
                                             <constraint firstItem="69F-LU-kQ1" firstAttribute="top" secondItem="hX5-xA-5r0" secondAttribute="topMargin" id="l0F-zh-Ad9"/>
                                         </constraints>
+                                        <variation key="default">
+                                            <mask key="constraints">
+                                                <exclude reference="8gg-Dg-UbZ"/>
+                                                <exclude reference="ht2-V6-9Qd"/>
+                                            </mask>
+                                        </variation>
                                         <connections>
                                             <outlet property="addAlarmBtn" destination="G9N-qO-0IY" id="MUF-We-QH0"/>
+                                            <outlet property="lbBtn" destination="eK1-eX-1Ql" id="36G-h3-HTF"/>
                                             <outlet property="nameLabel" destination="JfG-kW-wyt" id="FHD-HQ-LYB"/>
                                             <outlet property="touchAreaView" destination="6XS-9V-xwe" id="EM4-2u-99B"/>
                                             <outlet property="touchDotImg" destination="lCR-ZH-nSg" id="hji-d2-a3f"/>

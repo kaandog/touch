@@ -92,7 +92,6 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
             (alarms, error) in
             if (error == nil) {
                 self.transformAlarmResults(alarms!)
-                self.alarmsTableView!.reloadData()
                 self.currentNode = node
                 self.displayTable()
             }
@@ -118,6 +117,7 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
 
             self.alarms.append(a)
         }
+        self.alarmsTableView!.reloadData()
     }
 
     

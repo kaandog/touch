@@ -14,6 +14,7 @@ import SwiftyJSON
 import pop
 
 let WS_URL = "http://touch-mobile-cloud.herokuapp.com";
+let PI_URL = "http://touchpi.wv.cc.cmu.edu:5000";
 let NODE_STORAGE_KEY = "node"
 
 class Node {
@@ -71,8 +72,36 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     var initialTranslation:CGPoint? = nil;
     let bufferTranslation = 0;
     
-    func swiped(nodeName: String, distance:Int) {
-        Alamofire.request(.GET, WS_URL + "/m/" + nodeName + "/" + String(distance));
+    func swiped(nodeId: String, distance:Int) {
+        Alamofire.request(.GET, WS_URL + "/swipe/" + nodeId + "/" + String(distance));
+    }
+
+    func moveToPosition(nodeId: String, position:CGFloat) {
+        print(position)
+        var pos = position
+        if (pos < 0) { pos = 0 }
+        if (pos > 400) { pos = 400 }
+        Alamofire.request(.GET, PI_URL + "/p/" + nodeId + "/" + String(position));
+    }
+    
+    func savePosition(nodeId: String, position:CGFloat) {
+        print(position)
+        var pos:Int = Int(position)
+        if (pos < 0) { pos = 0 }
+        if (pos > 400) { pos = 400 }
+        
+        PFCloud.callFunctionInBackground("updateNodePosition", withParameters: ["nodeId":nodeId, "position": pos]) {
+            (result, error) in
+
+            if (error == nil) {
+//                self.transformNodeResults(nodes!)
+//                self.nodesCollectionView.reloadData()
+            }
+            else {
+                print("Error with getting nodes")
+            }
+
+        }
     }
 
     func tappedView(sender:DopeRecognizer){
@@ -81,6 +110,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         let translation = sender.locationInView(cell);
         cell.touchDotImg.frame.origin.x =  translation.x - cell.touchDotImg.frame.width/2;
         cell.touchDotImg.frame.origin.y = translation.y - cell.touchDotImg.frame.height/2;
+        let pos = translation.y;
 
         // do other task
         if sender.state == .Began {
@@ -89,39 +119,25 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 cell.touchDotImg.alpha = 1.0
             }, completion: nil)
             
-            initialTranslation = translation;
+            self.moveToPosition((cell.node?.macAddress)!, position: pos);
         }
         
         if sender.state == .Changed
         {
-            if initialTranslation != nil {
-                let distance = initialTranslation!.y - translation.y;
-                print(distance);
-                
-                if (distance > 50) {
-                    //send up
-                    initialTranslation = translation;
-                    self.swiped(cell.nodeName, distance: 20);
-                }
-                else if (distance < -50) {
-                    //send down
-                    initialTranslation = translation;
-                    self.swiped(cell.nodeName, distance: -20);
-                }
-                
+            
+            if (distance % 5 == 0) {
+                self.moveToPosition((cell.node?.macAddress)!, position: pos);
             }
         }
         if sender.state == .Ended {
             print("ended")
-            if initialTranslation != nil {
-                let distance = initialTranslation!.y - translation.y;
-                swiped((cell.node?.macAddress)!, distance: Int(distance));
-            }
+            self.moveToPosition((cell.node?.macAddress)!, position: pos);
+            self.savePosition((cell.node?.objectId)!, position: pos);
     
             let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
 
             UIView.animateWithDuration(0.15, delay: 0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
-                cell.touchDotImg.alpha = 0.0
+                cell.touchDotImg.alpha = 0.5
             }, completion: nil)
             
             initialTranslation = nil;
@@ -333,8 +349,14 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         
         PFCloud.callFunctionInBackground("createNewAlarm", withParameters:["datetime":pickedDate.timeIntervalSince1970, "nodeId" : (self.alarmsViewController?.currentNode?.objectId)!]){
             (alarms, error) in
+            
+            if (error == nil) {
+                self.alarmsViewController?.transformAlarmResults(alarms!)
+            }
+            else {
+                print("Error with creating alarm")
+            }
 
-            self.alarmsViewController?.transformAlarmResults(alarms!)
         }
     }
     
@@ -352,6 +374,7 @@ class NodeCell: UICollectionViewCell {
     @IBOutlet var addAlarmBtn: UIButton!
     @IBOutlet var touchAreaView: UIView!
     
+    @IBOutlet var lbBtn: UIButton!
     
     @IBAction func tappedAddAlarm(sender: AnyObject) {
         let isOnAlarmsMode:Bool = (self.parentViewController?.toggleAlarmsViewForNode(self.node!))!
@@ -364,5 +387,8 @@ class NodeCell: UICollectionViewCell {
         }
     }
 
+    @IBAction func tappedLpBtn(sender: AnyObject) {
+        Alamofire.request(.GET, WS_URL + "/lowpower/on/" + (self.node?.macAddress)!);
+    }
 }
 
