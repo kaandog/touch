@@ -161,7 +161,7 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
     // if this packet isn't directed to us or is from us
     if (pkt.dest_node_id != GATEWAY_ID ||
         pkt.src_node_id == GATEWAY_ID ||
-        pkt.src_node_id > MAX_NODES)
+        pkt.src_node_id >= MAX_NODES)
     {
         DEBUG_PRINT("Invalid dest,src id %d %d \r\n",pkt.src_node_id, pkt.dest_node_id);
         return;
@@ -248,7 +248,7 @@ uint8_t touch_tx_pkt(touch_packet_t pkt)
         return TOUCH_ERROR;
     }
 
-    if (pkt.dest_node_id > MAX_NODES)
+    if (pkt.dest_node_id >= MAX_NODES)
     {
         return TOUCH_ERROR;
     }
@@ -309,7 +309,7 @@ uint8_t touch_tx_with_ack(char cmd, int16_t data, uint8_t dest_id)
  */
 uint8_t touch_schedule_cmd(char cmd, int16_t data, uint8_t dest_id)
 {
-    if (dest_id > MAX_NODES || !node_lp_stats[dest_id])
+    if (dest_id >= MAX_NODES || !node_lp_stats[dest_id])
     {
         return TOUCH_ERROR;
     }
@@ -479,7 +479,7 @@ void touch_gw_main(void)
     }
 
     // invalid dest id
-    if ((uint8_t)dest_id > MAX_NODES)
+    if ((uint8_t)dest_id >= MAX_NODES)
     {
         return;
     }
@@ -492,9 +492,13 @@ void touch_gw_main(void)
         {
             if (!node_lp_stats[dest_id])
             {
+                if (touch_tx_with_auto_retry((char)cmd, (int16_t) data, (uint8_t) dest_id, 3) != TOUCH_SUCCESS)
+                {
+                    printf("e,%d\n", dest_id);
+                    return;
+                }
                 node_lp_stats[dest_id] = 1;
                 touch_schedule_cmd(CMD_NOOP, 0, 0);
-                touch_tx_with_auto_retry((char)cmd, (int16_t) data, (uint8_t) dest_id, 3);
             }
         }
         // low power off

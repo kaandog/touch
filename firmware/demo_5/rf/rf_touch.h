@@ -7,7 +7,7 @@
 #define TOUCH_ERROR -1
 #define TOUCH_SUCCESS 0
 
-#define MAX_NODES   3
+#define MAX_NODES   4
 #define LOW_BATTERY_THRESHOLD   450
 #define BATTERY_ALERT_CNT   10
 
