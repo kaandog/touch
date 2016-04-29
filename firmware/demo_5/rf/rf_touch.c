@@ -97,7 +97,7 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
         rf_rx_on();
 
         // delay until servo finishes rotation
-        _delay_ms(500);
+        _delay_ms(100);
         servo_off();
     }
     else if (pkt.cmd == 'l')
@@ -289,16 +289,39 @@ ISR(SCNT_CMP1_vect)
 {
 }
 
+void tristate_ports(void)
+{
+    // Setup ports
+    DDRB = 0;
+    DDRG = 0;
+    DDRD = 0;
+
+    TCCR1A = 0;
+    TCCR1B = 0;
+    ICR1 = 0;
+}
+
+void setup_ports(void)
+{
+    // Setup ports
+    DDRB |= (1<<5);
+    DDRG |= (1<<0);
+    DDRB |= (1<<2);
+    DDRD |= (1<<4);
+
+    TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);
+    TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10);
+    ICR1=4999;
+}
+
+
 void enable_sc_wakeup(void)
 {
     ASSR |= (1<<AS2);
 
     //sleep for 5 minutes
-    // SCOCR1HH = 0x01;
-    //SCOCR1HL = 0x2c;
-
-    SCOCR1HH = 0x0;
-    SCOCR1HL = 0x3;
+    SCOCR1HH = 0x01;
+    SCOCR1HL = 0x2c;
     SCOCR1LH = 0x0;
     SCOCR1LL = 0x0;
 
@@ -328,15 +351,17 @@ void touch_node_main(void)
         led_on();
         // go to sleep
         rf_sleep();
+        tristate_ports();
         enable_sc_wakeup();
         sei();
         set_sleep_mode(SLEEP_MODE_PWR_SAVE);
         sleep_enable();
         sleep_cpu();
-        // wakeup
 
+        // wakeup
         sleep_disable();
         disable_sc_wakeup();
+        setup_ports();
         rf_wake();
         if (touch_tx_with_auto_retry(CMD_WAKEUP, 0, GATEWAY_ID, 3))
         {
@@ -442,15 +467,7 @@ void touch_init(uint8_t is_gw)
         rf_init(rx_gw_callback, NULL);
     else
     {
-        // Setup ports
-        DDRB |= (1<<5);
-        DDRG |= (1<<0);
-        DDRB |= (1<<2);
-        DDRD |= (1<<4);
-
-        TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);
-        TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10);
-        ICR1=4999;
+        setup_ports();
 
         led_off();
 
