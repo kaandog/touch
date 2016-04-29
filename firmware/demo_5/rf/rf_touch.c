@@ -10,6 +10,8 @@
 #include <util/delay.h>
 
 volatile uint8_t node_acks[MAX_NODES];
+volatile touch_packet_t node_lp_cmds[MAX_NODES];
+volatile uint8_t node_lp_stats[MAX_NODES];
 volatile uint8_t low_power_mode = 0;
 
 void low_power_on(void)
@@ -50,13 +52,6 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
     if (buf_len != sizeof(touch_packet_t))
     {
         DEBUG_PRINT("Invalid buf_len size %d\r\n", buf_len);
-        led_on();
-        _delay_ms(100);
-        led_off();
-        _delay_ms(100);
-        led_on();
-        _delay_ms(100);
-        led_off();
 
         return;
     }
@@ -68,9 +63,6 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
     {
         return;
     }
-
-
-    led_on();
 
     // if the command is for movement
     if (pkt.cmd == 'p' || pkt.cmd == 'm')
@@ -99,7 +91,7 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
         OCR1A = (uint16_t) temp_OCR1A;
 
         // send a packet back with our new servo pos
-        touch_tx('i', (int16_t) (temp_OCR1A-133), GATEWAY_ID);
+        touch_build_and_tx('i', (int16_t) (temp_OCR1A-133), GATEWAY_ID);
 
         // turn rx back on
         rf_rx_on();
@@ -110,21 +102,20 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
     }
     else if (pkt.cmd == 'l')
     {
-
+        touch_build_and_tx(CMD_ACK, 0, GATEWAY_ID);
         if (pkt.data)
         {
             low_power_on();
-            touch_tx('i', (int16_t) (OCR1A-133), GATEWAY_ID);
         }
         else
         {
             low_power_off();
-            touch_tx('i', (int16_t) (OCR1A-133), GATEWAY_ID);
         }
     }
-
-
-    led_off();
+    else if (pkt.cmd == CMD_ACK || pkt.cmd == CMD_INFO)
+    {
+        node_acks[pkt.src_node_id] = 1;
+    }
 
     return;
 }
@@ -150,19 +141,47 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
     }
 
     // if packet is an ack packet
-    if (pkt.cmd == 'a' || pkt.cmd == 'i')
+    if (pkt.cmd == CMD_ACK || pkt.cmd == CMD_INFO)
     {
         // if this is an info packet
-        if (pkt.cmd == 'i')
+        if (pkt.cmd == CMD_INFO)
         {
-            printf("%d:p,%d\n", pkt.src_node_id, pkt.data);
+            printf("p,%d,%d\n", pkt.data, pkt.src_node_id);
         }
         node_acks[pkt.src_node_id] = 1;
+    }
+    else if (pkt.cmd == CMD_WAKEUP)
+    {
+        // ack it and then send a cmd if one is available
+        touch_build_and_tx(CMD_ACK, 0, pkt.src_node_id);
+        // if there is a schedule command for this node, send it over
+        if (node_lp_cmds[pkt.src_node_id].cmd != CMD_NOOP)
+        {
+            touch_tx_pkt(node_lp_cmds[pkt.src_node_id]);
+            touch_schedule_cmd(CMD_NOOP, 0, pkt.src_node_id);
+        }
+    }
+    else
+    {
+        printf("shouldn't be getting here!\n");
     }
 
     return;
 }
 
+/* @brief checks if char is a valid cmd
+ */
+uint8_t touch_is_valid_cmd(char cmd)
+{
+    if (cmd != CMD_LOWPOWER && cmd != CMD_INFO &&
+        cmd != CMD_POSITION && cmd != CMD_MOVE &&
+        cmd != CMD_WAKEUP && cmd != CMD_ACK &&
+        cmd != CMD_INFO && cmd != CMD_NOOP)
+    {
+        return FALSE;
+    }
+    return TRUE;
+}
 
 /* @brief sends a packet with retry
  */
@@ -179,36 +198,41 @@ uint8_t touch_tx_with_auto_retry(char cmd, int16_t data, uint8_t dest_id, uint8_
     return TOUCH_ERROR;
 }
 
-/* @brief sends a touch packet
- */
-uint8_t touch_tx(char cmd, int16_t data, uint8_t dest_id)
+uint8_t touch_tx_pkt(touch_packet_t pkt)
 {
-    touch_packet_t pkt;
-
-    if (cmd != 'l' && cmd != 'i' && cmd != 'p' && cmd != 'm')
+    if (!touch_is_valid_cmd(pkt.cmd))
     {
         return TOUCH_ERROR;
     }
 
-    if (dest_id > MAX_NODES)
+    if (pkt.dest_node_id > MAX_NODES)
     {
         return TOUCH_ERROR;
     }
-
-
-    pkt.cmd = (char) cmd;
-    pkt.data = (int16_t) data;
-    pkt.dest_node_id = (uint8_t) dest_id;
-    pkt.src_node_id = NODE_ID;
 
     DEBUG_PRINT("pkt.cmd = %c\r\n", pkt.cmd);
     DEBUG_PRINT("pkt.data = %d\r\n", pkt.data);
     DEBUG_PRINT("pkt.dest_node_id = %d\r\n", pkt.dest_node_id);
-    DEBUG_PRINT("pkt.src_node_id = %d\r\n", pkt.dest_node_id);
-
+    DEBUG_PRINT("pkt.src_node_id = %d\r\n", pkt.src_node_id);
 
     rf_tx_packet_nonblocking((uint8_t*) &pkt, sizeof(touch_packet_t));
     return TOUCH_SUCCESS;
+
+}
+
+/* @brief builds and sends a touch packet
+ */
+uint8_t touch_build_and_tx(char cmd, int16_t data, uint8_t dest_id)
+{
+    touch_packet_t pkt;
+
+    pkt.cmd = cmd;
+    pkt.data = data;
+    pkt.dest_node_id = dest_id;
+    pkt.src_node_id = NODE_ID;
+
+    return touch_tx_pkt(pkt);
+
 }
 
 /* @brief sends a touch packet and waits for ack
@@ -216,7 +240,7 @@ uint8_t touch_tx(char cmd, int16_t data, uint8_t dest_id)
 uint8_t touch_tx_with_ack(char cmd, int16_t data, uint8_t dest_id)
 {
     volatile uint8_t cnt = 0;
-    if (touch_tx(cmd, data, dest_id) != TOUCH_SUCCESS)
+    if (touch_build_and_tx(cmd, data, dest_id) != TOUCH_SUCCESS)
     {
         return TOUCH_SUCCESS;
     }
@@ -235,9 +259,34 @@ uint8_t touch_tx_with_ack(char cmd, int16_t data, uint8_t dest_id)
     return TOUCH_ERROR;
 }
 
+
+/* @brief schedules a command for a sleeping node
+ */
+uint8_t touch_schedule_cmd(char cmd, int16_t data, uint8_t dest_id)
+{
+    if (dest_id > MAX_NODES || !node_lp_stats[dest_id])
+    {
+        return TOUCH_ERROR;
+    }
+
+    if (!touch_is_valid_cmd(cmd))
+    {
+        return TOUCH_ERROR;
+    }
+
+    // atomically add this new packet
+    cli();
+    node_lp_cmds[dest_id].cmd = cmd;
+    node_lp_cmds[dest_id].data = data;
+    node_lp_cmds[dest_id].dest_node_id = dest_id;
+    node_lp_cmds[dest_id].src_node_id = GATEWAY_ID;
+    sei();
+
+    return TOUCH_SUCCESS;
+}
+
 ISR(SCNT_CMP1_vect)
 {
-    led_off();
 }
 
 void enable_sc_wakeup(void)
@@ -245,8 +294,11 @@ void enable_sc_wakeup(void)
     ASSR |= (1<<AS2);
 
     //sleep for 5 minutes
-    SCOCR1HH = 0x01;
-    SCOCR1HL = 0x2c;
+    // SCOCR1HH = 0x01;
+    //SCOCR1HL = 0x2c;
+
+    SCOCR1HH = 0x0;
+    SCOCR1HL = 0x3;
     SCOCR1LH = 0x0;
     SCOCR1LL = 0x0;
 
@@ -273,10 +325,10 @@ void touch_node_main(void)
     {
         cli();
 
+        led_on();
         // go to sleep
         rf_sleep();
         enable_sc_wakeup();
-        led_on();
         sei();
         set_sleep_mode(SLEEP_MODE_PWR_SAVE);
         sleep_enable();
@@ -284,13 +336,94 @@ void touch_node_main(void)
         // wakeup
 
         sleep_disable();
-        led_off();
         disable_sc_wakeup();
         rf_wake();
-        touch_tx_with_auto_retry('w', OCR1A-133, GATEWAY_ID, 3);
-        low_power_mode = 0;
+        if (touch_tx_with_auto_retry(CMD_WAKEUP, 0, GATEWAY_ID, 3))
+        {
+            led_on();
+            _delay_ms(100);
+            led_off();
+            _delay_ms(100);
+            led_on();
+            _delay_ms(100);
+            led_off();
+        }
+
+        // be responsive for 1 second
+        // and go back to sleep
+        // TODO: change back to 1 sec
+        led_off();
+        _delay_ms(3000);
     }
     sei();
+}
+
+void touch_gw_main(void)
+{
+    char input;
+    uint32_t cmd, data, dest_id;
+    uint8_t buffer[128];
+    uint8_t buf_i;
+
+    buf_i = 0;
+    input = getchar();
+
+    while (input != '\n' && input != '\r' && buf_i < sizeof(buffer)) {
+        buffer[buf_i++]= input;
+        input = getchar();
+    }
+    buffer[buf_i++] = '\0';
+
+    if (sscanf(buffer, " %c,%d,%d",&cmd, &data, &dest_id) != 3)
+    {
+        return;
+    }
+
+    // invalid dest id
+    if ((uint8_t)dest_id > MAX_NODES)
+    {
+        return;
+    }
+
+    // check if this is a low power command
+    if ((char)cmd == CMD_LOWPOWER)
+    {
+        // low power on
+        if (data)
+        {
+            if (!node_lp_stats[dest_id])
+            {
+                node_lp_stats[dest_id] = 1;
+                touch_schedule_cmd(CMD_NOOP, 0, 0);
+                touch_tx_with_auto_retry((char)cmd, (int16_t) data, (uint8_t) dest_id, 3);
+            }
+        }
+        // low power off
+        else
+        {
+            if (node_lp_stats[dest_id])
+            {
+                touch_schedule_cmd((char)cmd, (int16_t) data, (uint8_t) dest_id);
+                node_lp_stats[dest_id] = 0;
+            }
+        }
+        return;
+    }
+
+    if (node_lp_stats[dest_id])
+    {
+        if (cmd != CMD_LOWPOWER)
+        {
+            touch_schedule_cmd(cmd, data, dest_id);
+        }
+    }
+    else
+    {
+        if (touch_tx_with_auto_retry((char)cmd, (int16_t)data, (uint8_t) dest_id, 3) != TOUCH_SUCCESS)
+        {
+            printf("e,%d\n", dest_id);
+        }
+    }
 }
 
 void touch_init(uint8_t is_gw)
@@ -299,6 +432,11 @@ void touch_init(uint8_t is_gw)
     for (i = 0; i < MAX_NODES; i++)
     {
         node_acks[i] = 0;
+        node_lp_stats[i] = 0;
+        node_lp_cmds[i].cmd = CMD_NOOP;
+        node_lp_cmds[i].data = 0;
+        node_lp_cmds[i].dest_node_id = 0;
+        node_lp_cmds[i].src_node_id = 0;
     }
     if (is_gw)
         rf_init(rx_gw_callback, NULL);
@@ -318,6 +456,9 @@ void touch_init(uint8_t is_gw)
 
         rf_init(rx_node_callback, NULL);
         rf_rx_on();
+
+        // see if we are in low power mode
+        touch_tx_with_auto_retry(CMD_QUESTION, 0, NODE_ID, 3);
 
     }
 }

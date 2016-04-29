@@ -43,10 +43,6 @@ FILE uart_io = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 
 int main(void)
 {
-    char input;
-    uint32_t cmd, data, dest_id;
-    uint8_t buffer[128];
-    uint8_t buf_i;
 
     // init uart
     uart_init();
@@ -57,21 +53,6 @@ int main(void)
 
     while(1)
     {
-        buf_i = 0;
-        input = getchar();
-        while (input != '\n' && input != '\r' && buf_i < sizeof(buffer)) {
-            buffer[buf_i++]= input;
-            input = getchar();
-        }
-        buffer[buf_i++] = '\0';
-
-        if (sscanf(buffer, " %c,%d,%d",&cmd, &data, &dest_id) != 3)
-        {
-            continue;
-        }
-
-        touch_tx_with_auto_retry((char)cmd, (int16_t)data, (uint8_t) dest_id, 3);
-
-
+        touch_gw_main();
     }
 }

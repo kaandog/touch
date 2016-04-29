@@ -157,6 +157,11 @@ void rf_trx_off(void)
  */
 void rf_sleep(void)
 {
+    uint8_t status;
+    do {
+        status = GET_TRX_STATUS();
+    } while (status == BUSY_TX || status == BUSY_RX);
+
     if (GET_TRX_STATUS() != TRX_OFF)
     {
         rf_trx_off();
