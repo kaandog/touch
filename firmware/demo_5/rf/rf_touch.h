@@ -8,6 +8,8 @@
 #define TOUCH_SUCCESS 0
 
 #define MAX_NODES   3
+#define LOW_BATTERY_THRESHOLD   450
+#define BATTERY_ALERT_CNT   10
 
 typedef struct touch_packet_t {
     char cmd;
@@ -25,6 +27,7 @@ typedef struct touch_packet_t {
 #define CMD_INFO        'i'
 #define CMD_NOTFOUND    'e'
 #define CMD_WAKEUP      'w'
+#define CMD_DANGER      'd'
 #define CMD_NOOP        '0'
 
 

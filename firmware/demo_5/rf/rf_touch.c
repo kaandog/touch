@@ -12,7 +12,7 @@
 volatile uint8_t node_acks[MAX_NODES];
 volatile touch_packet_t node_lp_cmds[MAX_NODES];
 volatile uint8_t node_lp_stats[MAX_NODES];
-volatile uint8_t low_power_mode = 0;
+volatile int8_t low_power_mode = 0;
 
 void low_power_on(void)
 {
@@ -44,9 +44,19 @@ void led_off(void)
     PORTD |= (1<<4);
 }
 
+void delay_ms(uint16_t cnt)
+{
+    uint16_t i;
+    for (i = 0; i < cnt; i++)
+    {
+        _delay_ms(1);
+    }
+}
+
 void rx_node_callback(uint8_t *buf, uint8_t buf_len)
 {
     int16_t temp_OCR1A;
+    uint16_t servo_delay;
     touch_packet_t pkt;
 
     if (buf_len != sizeof(touch_packet_t))
@@ -88,16 +98,32 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
         {
             temp_OCR1A = 133;
         }
+
+
+        if (OCR1A > (uint16_t) temp_OCR1A)
+        {
+            servo_delay = OCR1A - (uint16_t) temp_OCR1A;
+        }
+        else
+        {
+            servo_delay = (uint16_t) temp_OCR1A - OCR1A;
+        }
+
+        if (servo_delay < 50)
+        {
+            servo_delay = 50;
+        }
+
         OCR1A = (uint16_t) temp_OCR1A;
 
         // send a packet back with our new servo pos
-        touch_build_and_tx('i', (int16_t) (temp_OCR1A-133), GATEWAY_ID);
+        touch_build_and_tx('i', (int16_t) (OCR1A-133), GATEWAY_ID);
 
         // turn rx back on
         rf_rx_on();
 
         // delay until servo finishes rotation
-        _delay_ms(100);
+        delay_ms(servo_delay);
         servo_off();
     }
     else if (pkt.cmd == 'l')
@@ -137,6 +163,7 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
         pkt.src_node_id == GATEWAY_ID ||
         pkt.src_node_id > MAX_NODES)
     {
+        DEBUG_PRINT("Invalid dest,src id %d %d \r\n",pkt.src_node_id, pkt.dest_node_id);
         return;
     }
 
@@ -146,24 +173,39 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
         // if this is an info packet
         if (pkt.cmd == CMD_INFO)
         {
-            printf("p,%d,%d\n", pkt.data, pkt.src_node_id);
+            printf("i,%d,%d\n", pkt.data, pkt.src_node_id);
         }
         node_acks[pkt.src_node_id] = 1;
     }
     else if (pkt.cmd == CMD_WAKEUP)
     {
-        // ack it and then send a cmd if one is available
-        touch_build_and_tx(CMD_ACK, 0, pkt.src_node_id);
+        touch_build_and_tx('a',0,pkt.src_node_id);
+        // if this node has been removed
+        // from the low power nodes
+        if (!node_lp_stats[pkt.src_node_id])
+        {
+            touch_build_and_tx(CMD_LOWPOWER, 0, pkt.src_node_id);
+        }
         // if there is a schedule command for this node, send it over
-        if (node_lp_cmds[pkt.src_node_id].cmd != CMD_NOOP)
+        else if (node_lp_cmds[pkt.src_node_id].cmd != CMD_NOOP)
         {
             touch_tx_pkt(node_lp_cmds[pkt.src_node_id]);
             touch_schedule_cmd(CMD_NOOP, 0, pkt.src_node_id);
         }
     }
+    else if (pkt.cmd == CMD_DANGER)
+    {
+        printf("d,%d,%d\n", pkt.data, pkt.src_node_id);
+    }
+    else if (pkt.cmd == CMD_QUESTION)
+    {
+        DEBUG_PRINT("node is %d\r\n", node_lp_stats[pkt.src_node_id]);
+        // tell the node if its low power or not
+        touch_build_and_tx(CMD_LOWPOWER, (int16_t) node_lp_stats[pkt.src_node_id], pkt.src_node_id);
+    }
     else
     {
-        printf("shouldn't be getting here!\n");
+        DEBUG_PRINT("shouldn't be getting here! %c\n", pkt.cmd);
     }
 
     return;
@@ -176,6 +218,7 @@ uint8_t touch_is_valid_cmd(char cmd)
     if (cmd != CMD_LOWPOWER && cmd != CMD_INFO &&
         cmd != CMD_POSITION && cmd != CMD_MOVE &&
         cmd != CMD_WAKEUP && cmd != CMD_ACK &&
+        cmd != CMD_DANGER && cmd != CMD_QUESTION &&
         cmd != CMD_INFO && cmd != CMD_NOOP)
     {
         return FALSE;
@@ -215,7 +258,9 @@ uint8_t touch_tx_pkt(touch_packet_t pkt)
     DEBUG_PRINT("pkt.dest_node_id = %d\r\n", pkt.dest_node_id);
     DEBUG_PRINT("pkt.src_node_id = %d\r\n", pkt.src_node_id);
 
+    cli();
     rf_tx_packet_nonblocking((uint8_t*) &pkt, sizeof(touch_packet_t));
+    sei();
     return TOUCH_SUCCESS;
 
 }
@@ -299,6 +344,9 @@ void tristate_ports(void)
     TCCR1A = 0;
     TCCR1B = 0;
     ICR1 = 0;
+
+    ADMUX = 0;
+    ADCSRA = 0;
 }
 
 void setup_ports(void)
@@ -312,6 +360,34 @@ void setup_ports(void)
     TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);
     TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10);
     ICR1=4999;
+
+    ADMUX = (1<<REFS1)|(1<<REFS0)|7;
+    ADCSRA |= (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+
+}
+
+void check_battery(void)
+{
+    static uint8_t battery_check_cnt = 0;
+    uint16_t bat_ref;
+    ADCSRA |= (1<<ADSC);
+    while(ADCSRA & (1<<ADSC));
+
+    bat_ref = ADC;
+
+    // check stuff
+    if (bat_ref < LOW_BATTERY_THRESHOLD)
+    {
+        if (battery_check_cnt++ > BATTERY_ALERT_CNT)
+        {
+            touch_build_and_tx(CMD_DANGER, bat_ref, GATEWAY_ID);
+        }
+    }
+    else
+    {
+        // reset the low battery counter
+        battery_check_cnt = 0;
+    }
 }
 
 
@@ -320,8 +396,11 @@ void enable_sc_wakeup(void)
     ASSR |= (1<<AS2);
 
     //sleep for 5 minutes
-    SCOCR1HH = 0x01;
-    SCOCR1HL = 0x2c;
+    //SCOCR1HH = 0x01;
+    //SCOCR1HL = 0x2c;
+
+    SCOCR1HH = 0x0;
+    SCOCR1HL = 0x5;
     SCOCR1LH = 0x0;
     SCOCR1LL = 0x0;
 
@@ -343,7 +422,6 @@ void disable_sc_wakeup(void)
 
 void touch_node_main(void)
 {
-    cli();
     if (low_power_mode)
     {
         cli();
@@ -363,24 +441,16 @@ void touch_node_main(void)
         disable_sc_wakeup();
         setup_ports();
         rf_wake();
-        if (touch_tx_with_auto_retry(CMD_WAKEUP, 0, GATEWAY_ID, 3))
-        {
-            led_on();
-            _delay_ms(100);
-            led_off();
-            _delay_ms(100);
-            led_on();
-            _delay_ms(100);
-            led_off();
-        }
-
-        // be responsive for 1 second
-        // and go back to sleep
-        // TODO: change back to 1 sec
+        touch_tx_with_auto_retry(CMD_WAKEUP, 0, GATEWAY_ID, 3);
         led_off();
-        _delay_ms(3000);
+        check_battery();
+        _delay_ms(1000);
     }
-    sei();
+    else
+    {
+        check_battery();
+        _delay_ms(5000);
+    }
 }
 
 void touch_gw_main(void)
@@ -398,6 +468,10 @@ void touch_gw_main(void)
         input = getchar();
     }
     buffer[buf_i++] = '\0';
+
+    cmd = 0;
+    data = 0;
+    dest_id = 0;
 
     if (sscanf(buffer, " %c,%d,%d",&cmd, &data, &dest_id) != 3)
     {
@@ -463,8 +537,12 @@ void touch_init(uint8_t is_gw)
         node_lp_cmds[i].dest_node_id = 0;
         node_lp_cmds[i].src_node_id = 0;
     }
+
     if (is_gw)
+    {
         rf_init(rx_gw_callback, NULL);
+        rf_rx_on();
+    }
     else
     {
         setup_ports();
@@ -475,7 +553,8 @@ void touch_init(uint8_t is_gw)
         rf_rx_on();
 
         // see if we are in low power mode
-        touch_tx_with_auto_retry(CMD_QUESTION, 0, NODE_ID, 3);
+        touch_build_and_tx(CMD_QUESTION, 0, GATEWAY_ID);
+
 
     }
 }
