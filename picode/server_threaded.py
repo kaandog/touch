@@ -6,6 +6,7 @@ HOST_NAME = 'touchpi.wv.cc.cmu.edu'
 PORT_NUMBER = 5000 # Maybe set this to 9000.
 
 import serial
+import threading
 
 ser = serial.Serial(
        port='/dev/ttyAMA0',
@@ -33,6 +34,8 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
        s.wfile.write("<html><head><title>Title goes here.</title></head>")
        s.wfile.write("<body>")
        s.wfile.write("<p>You accessed path: %s</p>" % s.path)
+
+       lock.acquire()
        
        if (parameters[0] == "m" or parameters[0] == "p"):
            try:
@@ -56,44 +59,52 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                    ser.write(request)
            except:
                pass
-
        s.wfile.write("</body></html>")
+       lock.release()
+
 
 def receive_from_firefly():
-    x = ser.readline()
-    if (x != ""):
-        print "FROM FIREFLY:", x,
+    while True:
+        x = ser.readline()
+	lock.acquire()
 
-        if (x[0] == "i"):
-	    string = x.split(",")
-	    servo_pos = int(string[1])
-	    usr_node = int(string[2])
-	    print "FROM APP:", requests.get('http://touch-mobile-cloud.herokuapp.com/api/servo_location/'+str(usr_node)+"/"+str(servo_pos)).content,		    
-           
-	elif (x[0] == "d"):
-	    string = x.split(",")
-	    low_battery_on = int(string[1])
-	    usr_node = int(string[2])
-	    print "FROM APP:", requests.get('http://touch-mobile-cloud.herokuapp.com/api/low_battery/'+str(usr_node)+"/"+str(low_battery_on)).content,		
+        if (x != ""):
+            print "FROM FIREFLY:", x,
+            if (x[0] == "i"):
+                string = x.split(",")
+                servo_pos = int(string[1])
+                node_id = int(string[2])
+                print "FROM APP:", requests.get('http://touch-mobile-cloud.herokuapp.com/api/servo_location/'+str(node_id)+"/"+str(servo_pos)).content		    
+               
+            elif (x[0] == "d"):
+                string = x.split(",")
+                low_battery = int(string[1])
+                node_id = int(string[2])
+                print "FROM APP:", requests.get('http://touch-mobile-cloud.herokuapp.com/api/low_battery/'+str(node_id)+"/"+str(low_battery)).content		
 
 
-	elif (x[0] == "e"):
-	    string = x.split(",")
-	    usr_node = int(string[1])
-	    print "FROM APP:", requests.get('http://touch-mobile-cloud.herokuapp.com/api/not_found/'+str(usr_node)).content,
-
+            elif (x[0] == "e"):
+                string = x.split(",")
+		node_found = int(string[1])
+                node_id = int(string[2])
+                print "FROM APP:", requests.get('http://touch-mobile-cloud.herokuapp.com/api/is_found/'+str(node_id)+"/"+str(node_found)).content
+	lock.release()
         
 if __name__ == '__main__':
     server_class = BaseHTTPServer.HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
+
+    lock = threading.Lock()
+
+    t = threading.Thread(target= receive_from_firefly, args=[])
+    t.setDaemon(True)
+    t.start()
+    
     
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
     try:
         while True:
-            print 
-	    print 
-            httpd.handle_request()
-            receive_from_firefly()
+            httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     httpd.server_close()
