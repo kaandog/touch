@@ -56,7 +56,6 @@ void delay_ms(uint16_t cnt)
 void rx_node_callback(uint8_t *buf, uint8_t buf_len)
 {
     int16_t temp_OCR1A;
-    uint16_t servo_delay;
     touch_packet_t pkt;
 
     if (buf_len != sizeof(touch_packet_t))
@@ -99,31 +98,16 @@ void rx_node_callback(uint8_t *buf, uint8_t buf_len)
             temp_OCR1A = 133;
         }
 
-
-        if (OCR1A > (uint16_t) temp_OCR1A)
-        {
-            servo_delay = OCR1A - (uint16_t) temp_OCR1A;
-        }
-        else
-        {
-            servo_delay = (uint16_t) temp_OCR1A - OCR1A;
-        }
-
-        if (servo_delay < 50)
-        {
-            servo_delay = 50;
-        }
-
         OCR1A = (uint16_t) temp_OCR1A;
 
         // send a packet back with our new servo pos
-        touch_build_and_tx('i', (int16_t) (OCR1A-133), GATEWAY_ID);
+        touch_build_and_tx('i', (int16_t) (temp_OCR1A-133), GATEWAY_ID);
 
         // turn rx back on
         rf_rx_on();
 
         // delay until servo finishes rotation
-        delay_ms(servo_delay);
+        _delay_ms(500);
         servo_off();
     }
     else if (pkt.cmd == 'l')
@@ -368,8 +352,11 @@ void setup_ports(void)
 
 void check_battery(void)
 {
-    static uint8_t battery_check_cnt = 0;
+    static uint8_t battery_low_cnt = 0;
+    static uint8_t battery_high_cnt = 0;
+    static uint8_t issued_warning = 0;
     uint16_t bat_ref;
+
     ADCSRA |= (1<<ADSC);
     while(ADCSRA & (1<<ADSC));
 
@@ -378,15 +365,22 @@ void check_battery(void)
     // check stuff
     if (bat_ref < LOW_BATTERY_THRESHOLD)
     {
-        if (battery_check_cnt++ > BATTERY_ALERT_CNT)
+        battery_high_cnt = 0;
+        if (battery_low_cnt++ > BATTERY_ALERT_CNT && issued_warning != 1)
         {
-            touch_build_and_tx(CMD_DANGER, bat_ref, GATEWAY_ID);
+            issued_warning = 1;
+            touch_build_and_tx(CMD_DANGER, 1, GATEWAY_ID);
         }
     }
     else
     {
-        // reset the low battery counter
-        battery_check_cnt = 0;
+        battery_low_cnt = 0;
+        if (battery_high_cnt++ > BATTERY_ALERT_CNT && issued_warning != 2)
+        {
+            issued_warning = 2;
+            touch_build_and_tx(CMD_DANGER, 0, GATEWAY_ID);
+        }
+
     }
 }
 

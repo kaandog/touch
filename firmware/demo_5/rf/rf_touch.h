@@ -8,7 +8,7 @@
 #define TOUCH_SUCCESS 0
 
 #define MAX_NODES   4
-#define LOW_BATTERY_THRESHOLD   450
+#define LOW_BATTERY_THRESHOLD   465
 #define BATTERY_ALERT_CNT   10
 
 typedef struct touch_packet_t {
