@@ -16,6 +16,8 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
     
+    var mainViewController:ViewController?
+
     @IBAction func tappedLoginBtn(sender: AnyObject) {
         
         if (usernameTextField.text == nil || usernameTextField.text == nil) {
@@ -29,7 +31,9 @@ class LoginViewController: UIViewController {
         PFUser.logInWithUsernameInBackground(usernameTextField.text!, password:passwordTextField.text!) {
             (user: PFUser?, error: NSError?) -> Void in
             if user != nil {
+                self.mainViewController!.retrieveAllNodes()
                 self.dismissViewControllerAnimated(true, completion: nil)
+                
             } else {
                 let myAlert = UIAlertController(title: "Problem with Login", message: "Invalid Credentials", preferredStyle: UIAlertControllerStyle.Alert)
                 let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil)

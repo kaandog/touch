@@ -68,12 +68,19 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
         return alarms.count
     }
     
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell:AlarmCell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! AlarmCell
         
+        let dateFormatter = NSDateFormatter()
+        let theDateFormat = NSDateFormatterStyle.ShortStyle //5
+        let theTimeFormat = NSDateFormatterStyle.ShortStyle//6
+        dateFormatter.dateStyle = theDateFormat//8
+        dateFormatter.timeStyle = theTimeFormat//9
+        
         let alarm:Alarm = self.alarms[indexPath.item];
         // Configure the cell...
-        cell.nameLabel.text = String(alarm.time)
+        cell.nameLabel.text = dateFormatter.stringFromDate(alarm.time!)
         return cell
     }
     
@@ -117,6 +124,7 @@ class AlarmsViewController:UIViewController, UITableViewDataSource, UITableViewD
 
             self.alarms.append(a)
         }
+
         self.alarmsTableView!.reloadData()
     }
 

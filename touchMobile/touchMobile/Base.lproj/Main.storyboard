@@ -22,8 +22,8 @@
                                 <rect key="frame" x="30" y="39" width="166" height="45"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jBc-Ga-kUa">
-                                <rect key="frame" x="256" y="562" width="88" height="30"/>
-                                <state key="normal" title="Reset Nodes">
+                                <rect key="frame" x="274" y="562" width="52" height="30"/>
+                                <state key="normal" title="Log out">
                                     <color key="titleColor" red="0.79327552356020936" green="0.79327552356020936" blue="0.79327552356020936" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                                 <connections>
@@ -31,7 +31,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5fP-5x-ssN">
-                                <rect key="frame" x="475" y="39" width="80" height="84"/>
+                                <rect key="frame" x="475" y="39" width="80" height="88"/>
                                 <state key="normal" image="plusBtnImg">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
@@ -46,7 +46,7 @@
                                 </connections>
                             </button>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="zcj-Xb-fhO">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="469"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="250"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="AlarmTableViewCell" id="crL-Ip-UMK" customClass="AlarmCell" customModule="TouchMobile" customModuleProvider="target">
@@ -57,7 +57,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6x4-4b-ph9">
-                                                    <rect key="frame" x="20" y="8" width="42" height="22"/>
+                                                    <rect key="frame" x="20" y="8" width="296" height="22"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
@@ -84,7 +84,7 @@
                                     <action selector="tappedSaveAlarm:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Rp9-sz-ndS"/>
                                 </connections>
                             </button>
-                            <datePicker hidden="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="30" translatesAutoresizingMaskIntoConstraints="NO" id="JmZ-du-AwZ">
+                            <datePicker hidden="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="10" translatesAutoresizingMaskIntoConstraints="NO" id="JmZ-du-AwZ">
                                 <rect key="frame" x="167" y="205" width="348" height="217"/>
                                 <date key="date" timeIntervalSinceReferenceDate="483566675.40573102">
                                     <!--2016-04-28 20:04:35 +0000-->
@@ -123,24 +123,28 @@
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.097413793103448276" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="G9N-qO-0IY">
-                                                    <rect key="frame" x="0.0" y="362" width="189" height="30"/>
+                                                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="G9N-qO-0IY">
+                                                    <rect key="frame" x="8" y="362" width="189" height="30"/>
                                                     <state key="normal" title="Set Alarms"/>
                                                     <connections>
                                                         <action selector="tappedAddAlarm:" destination="hX5-xA-5r0" eventType="touchUpInside" id="WXp-Aq-XAI"/>
                                                     </connections>
                                                 </button>
                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eK1-eX-1Ql">
-                                                    <rect key="frame" x="265" y="362" width="30" height="30"/>
-                                                    <state key="normal" title="LP"/>
+                                                    <rect key="frame" x="212" y="362" width="91" height="30"/>
+                                                    <state key="normal" title="Turn LP On"/>
                                                     <connections>
                                                         <action selector="tappedLpBtn:" destination="hX5-xA-5r0" eventType="touchUpInside" id="Bbo-OJ-83Q"/>
                                                     </connections>
                                                 </button>
+                                                <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="low_battery" translatesAutoresizingMaskIntoConstraints="NO" id="pjQ-RO-SN3">
+                                                    <rect key="frame" x="258" y="10" width="54" height="33"/>
+                                                </imageView>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <constraints>
+                                            <constraint firstItem="G9N-qO-0IY" firstAttribute="bottom" secondItem="hX5-xA-5r0" secondAttribute="bottomMargin" id="3ut-EJ-iyP"/>
                                             <constraint firstItem="G9N-qO-0IY" firstAttribute="centerX" secondItem="hX5-xA-5r0" secondAttribute="centerX" constant="-0.5" id="8gg-Dg-UbZ"/>
                                             <constraint firstItem="JfG-kW-wyt" firstAttribute="leading" secondItem="hX5-xA-5r0" secondAttribute="leadingMargin" id="JXx-48-YfE"/>
                                             <constraint firstAttribute="trailingMargin" secondItem="69F-LU-kQ1" secondAttribute="trailing" id="MH7-cJ-OTC"/>
@@ -150,6 +154,7 @@
                                             <constraint firstItem="G9N-qO-0IY" firstAttribute="centerX" secondItem="hX5-xA-5r0" secondAttribute="centerX" id="ht2-V6-9Qd"/>
                                             <constraint firstItem="69F-LU-kQ1" firstAttribute="leading" secondItem="hX5-xA-5r0" secondAttribute="leadingMargin" id="i7s-Ki-PNN"/>
                                             <constraint firstItem="69F-LU-kQ1" firstAttribute="top" secondItem="hX5-xA-5r0" secondAttribute="topMargin" id="l0F-zh-Ad9"/>
+                                            <constraint firstItem="G9N-qO-0IY" firstAttribute="leading" secondItem="hX5-xA-5r0" secondAttribute="leadingMargin" constant="30" id="tzA-6k-aup"/>
                                         </constraints>
                                         <variation key="default">
                                             <mask key="constraints">
@@ -160,7 +165,9 @@
                                         <connections>
                                             <outlet property="addAlarmBtn" destination="G9N-qO-0IY" id="MUF-We-QH0"/>
                                             <outlet property="lbBtn" destination="eK1-eX-1Ql" id="36G-h3-HTF"/>
+                                            <outlet property="lowBatteryImg" destination="pjQ-RO-SN3" id="d3s-rV-tEW"/>
                                             <outlet property="nameLabel" destination="JfG-kW-wyt" id="FHD-HQ-LYB"/>
+                                            <outlet property="nodeBg" destination="69F-LU-kQ1" id="bU1-7Z-yJ5"/>
                                             <outlet property="touchAreaView" destination="6XS-9V-xwe" id="EM4-2u-99B"/>
                                             <outlet property="touchDotImg" destination="lCR-ZH-nSg" id="hji-d2-a3f"/>
                                         </connections>
@@ -193,7 +200,7 @@
                             <constraint firstAttribute="trailingMargin" secondItem="RNy-ll-PYe" secondAttribute="trailing" id="g8R-tz-EIT"/>
                             <constraint firstItem="RNy-ll-PYe" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="40" id="lfq-IX-JXE"/>
                             <constraint firstItem="JmZ-du-AwZ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="oPl-3I-dWe"/>
-                            <constraint firstItem="zcj-Xb-fhO" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="150" id="q9E-Tf-seF"/>
+                            <constraint firstItem="zcj-Xb-fhO" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="240" id="q9E-Tf-seF"/>
                             <constraint firstItem="jBc-Ga-kUa" firstAttribute="top" secondItem="zcj-Xb-fhO" secondAttribute="bottom" constant="150" id="tl3-Y7-2B2"/>
                             <constraint firstItem="5fP-5x-ssN" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="30" id="u2q-OL-zLd"/>
                             <constraint firstItem="BmS-HY-w53" firstAttribute="top" secondItem="RNy-ll-PYe" secondAttribute="bottom" constant="50" id="uCC-O3-6eT"/>
@@ -205,6 +212,7 @@
                             <mask key="constraints">
                                 <exclude reference="X3r-zT-4R9"/>
                                 <exclude reference="g8R-tz-EIT"/>
+                                <exclude reference="ChC-vR-Nz6"/>
                             </mask>
                         </variation>
                     </view>
@@ -259,7 +267,7 @@
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                         </subviews>
-                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="A5V-f9-dx2" firstAttribute="centerX" secondItem="wK0-X1-i5c" secondAttribute="centerX" id="505-O0-Q4V"/>
                             <constraint firstItem="VAh-x2-GAk" firstAttribute="centerX" secondItem="wK0-X1-i5c" secondAttribute="centerX" id="AsP-fQ-Evk"/>
@@ -280,6 +288,7 @@
     </scenes>
     <resources>
         <image name="logotype" width="167" height="43"/>
+        <image name="low_battery" width="21" height="13"/>
         <image name="nodeBg" width="290" height="392"/>
         <image name="plusBtnImg" width="80" height="80"/>
         <image name="touch" width="71" height="71"/>

@@ -15,12 +15,16 @@ import pop
 
 let WS_URL = "http://touch-mobile-cloud.herokuapp.com";
 let PI_URL = "http://touchpi.wv.cc.cmu.edu:5000";
-let NODE_STORAGE_KEY = "node"
 
 class Node {
     var name:String = "Unnamed"
     var macAddress:String = ""
     var objectId:String = ""
+    var position:Int = 0
+    var lowPowerOn:Bool = false
+    var isLowBattery:Bool = false
+    var isFound:Bool = true
+    var range:Int = 100
 }
 
 class DopeRecognizer: UILongPressGestureRecognizer
@@ -57,6 +61,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         self.alarmsTableView.delegate = alarmsViewController
         self.alarmsTableView.dataSource = alarmsViewController
         self.alarmsViewController!.alarmsTableView = self.alarmsTableView
+        
+        var timer = NSTimer.scheduledTimerWithTimeInterval(10, target: self, selector: "retrieveAllNodes", userInfo: nil, repeats: true)
+
         retrieveAllNodes()
     }
 
@@ -72,25 +79,28 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     var initialTranslation:CGPoint? = nil;
     let bufferTranslation = 0;
     
-    func swiped(nodeId: String, distance:Int) {
-        Alamofire.request(.GET, WS_URL + "/swipe/" + nodeId + "/" + String(distance));
-    }
 
-    func moveToPosition(nodeId: String, position:CGFloat) {
+    func moveToPosition(node: Node, position:CGFloat) {
+        var pos = Int(position)
+        let buffer = ((100 - node.range) / 2) * 4;
+        if (pos < buffer) { pos = buffer }
+        if (pos > (400-buffer)) { pos = (400-buffer) }
+        
         print(position)
-        var pos = position
-        if (pos < 0) { pos = 0 }
-        if (pos > 400) { pos = 400 }
-        Alamofire.request(.GET, PI_URL + "/p/" + nodeId + "/" + String(position));
+
+        Alamofire.request(.GET, PI_URL + "/p/" + String(pos) + "/" + node.macAddress);
+        print("/p/" + String(pos) + "/" + node.macAddress)
+        node.position = Int(position)
     }
     
-    func savePosition(nodeId: String, position:CGFloat) {
+    func savePosition(node: Node, position:CGFloat) {
         print(position)
         var pos:Int = Int(position)
-        if (pos < 0) { pos = 0 }
-        if (pos > 400) { pos = 400 }
+        let buffer = (100 - node.range) / 2;
+        if (pos < buffer) { pos = buffer }
+        if (pos > (400-buffer)) { pos = (400-buffer) }
         
-        PFCloud.callFunctionInBackground("updateNodePosition", withParameters: ["nodeId":nodeId, "position": pos]) {
+        PFCloud.callFunctionInBackground("updateNodePosition", withParameters: ["nodeId":node.objectId, "position": pos]) {
             (result, error) in
 
             if (error == nil) {
@@ -119,22 +129,20 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 cell.touchDotImg.alpha = 1.0
             }, completion: nil)
             
-            self.moveToPosition((cell.node?.macAddress)!, position: pos);
+            self.moveToPosition(cell.node!, position: pos);
         }
         
         if sender.state == .Changed
         {
             
-            if (distance % 5 == 0) {
-                self.moveToPosition((cell.node?.macAddress)!, position: pos);
+            if (pos % 20 == 0) {
+                self.moveToPosition(cell.node!, position: pos);
             }
         }
         if sender.state == .Ended {
-            print("ended")
-            self.moveToPosition((cell.node?.macAddress)!, position: pos);
-            self.savePosition((cell.node?.objectId)!, position: pos);
-    
-            let frame: CGRect = CGRect.init(x: cell.touchDotImg.center.x, y: cell.touchDotImg.center.y, width: 0, height: 0);
+
+            self.moveToPosition(cell.node!, position: pos);
+            self.savePosition(cell.node!, position: pos);
 
             UIView.animateWithDuration(0.15, delay: 0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
                 cell.touchDotImg.alpha = 0.5
@@ -161,10 +169,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             let nodeName = firstTextField.text;
             let secondTextField = alertController.textFields![1] as UITextField
             let macAddress = secondTextField.text;
-            self.storeNewNode(nodeName!, macAddress: macAddress!);
+            let thirdTextField = alertController.textFields![2] as UITextField
+            let range = Int(thirdTextField.text!);
+            self.storeNewNode(nodeName!, macAddress: macAddress!, range: range!);
             self.nodesCollectionView.reloadData();
-            let nodes = self.retrieveAllNodes();
-            print(nodes);
+            
+            self.retrieveAllNodes();
         })
         
         let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Default, handler: {
@@ -178,6 +188,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         alertController.addTextFieldWithConfigurationHandler {(textField: UITextField!) in
             textField.placeholder = "Mac address"
         };
+        alertController.addTextFieldWithConfigurationHandler {(textField: UITextField!) in
+            textField.placeholder = "Range"
+        };
         alertController.addAction(saveAction);
         alertController.addAction(cancelAction);
 
@@ -187,7 +200,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
 
     func retrieveAllNodes () {
-        
+        print("Retrieving")
         let currentUser = PFUser.currentUser()
         if currentUser != nil {
             
@@ -218,15 +231,21 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             n.name = node["name"].stringValue
             n.macAddress = node["macAddress"].stringValue
             n.objectId = node["objectId"].stringValue
+            n.position = node["position"].intValue
+            n.lowPowerOn = node["isLowPowerOn"].boolValue
+            n.isLowBattery = node["lowBattery"].boolValue
+            n.isFound = node["isFound"].boolValue
+            n.range = node["range"].intValue
+
             self.nodesArray.append(n)
         }
     }
 
     // STORAGE
 
-    func storeNewNode (nodeName:String, macAddress:String) {
+    func storeNewNode (nodeName:String, macAddress:String, range:Int) {
         PFCloud.callFunctionInBackground("createNewNode", withParameters:
-            ["name": nodeName, "macAddress": macAddress]) {
+            ["name": nodeName, "macAddress": macAddress, "range": range]) {
             (nodes, error) in
             if (error == nil) {
                 self.transformNodeResults(nodes!);
@@ -267,20 +286,34 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         cell.nameLabel.text = currentArray[indexPath.item].name
         cell.parentViewController = self
         cell.node = currentArray[indexPath.item]
+
         let gestureRec = DopeRecognizer()
         gestureRec.addTarget(self, action: #selector(ViewController.tappedView(_:)));
         gestureRec.delegate = self;
         gestureRec.minimumPressDuration = 0.05;
         gestureRec.numberOfTouchesRequired = 1;
         cell.touchAreaView.addGestureRecognizer(gestureRec);
-        // Configure the cell
+        
+        cell.touchDotImg.frame.origin.x =  cell.frame.size.width/2 - cell.touchDotImg.frame.width/2;
+        cell.touchDotImg.frame.origin.y = CGFloat((cell.node?.position)!)
+        cell.touchDotImg.alpha = 0.5
+        
+        if (cell.node!.isLowBattery) { cell.lowBatteryImg.hidden = false }
+        else { cell.lowBatteryImg.hidden = true }
+
+        if (cell.node!.lowPowerOn) {
+            cell.lbBtn.setTitle("Turn LP Off", forState: UIControlState.Normal)
+        }
+        
+        if (cell.node!.isFound) { cell.nodeBg.image = UIImage(named: "nodeBg") }
+        else { cell.nodeBg.image = UIImage(named: "nodeBgNotFound") }
+
         return cell
     }
 
     func gestureRecognizer(sender:UIGestureRecognizer, movedWithTouches touches:Set<UITouch>, Event event:UIEvent) {
         
         let cell:NodeCell = sender.view?.superview?.superview as! NodeCell;
-        print(touches.count);
         for touch in touches {
 
             var size:CGFloat = 80.00;
@@ -346,12 +379,21 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     @IBAction func tappedSaveAlarm(sender: AnyObject) {
         let pickedDate = datePicker.date
+        let node = self.alarmsViewController?.currentNode!
         
-        PFCloud.callFunctionInBackground("createNewAlarm", withParameters:["datetime":pickedDate.timeIntervalSince1970, "nodeId" : (self.alarmsViewController?.currentNode?.objectId)!]){
+        PFCloud.callFunctionInBackground("createNewAlarm", withParameters:["datetime":pickedDate.timeIntervalSince1970,
+            "nodeId" : node!.objectId,
+            "position" : node!.position,
+            "macAddress" : node!.macAddress,
+        ]){
             (alarms, error) in
             
             if (error == nil) {
                 self.alarmsViewController?.transformAlarmResults(alarms!)
+                self.datePicker.hidden = true
+                self.saveAlarmBtn.hidden = true
+                self.alarmsTableView.hidden = false
+                self.addAlarmBtn.hidden = false
             }
             else {
                 print("Error with creating alarm")
@@ -360,6 +402,13 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
     }
     
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "displayLoginView" {
+            if let loginViewController = segue.destinationViewController as? LoginViewController {
+                loginViewController.mainViewController = self
+            }
+        }
+    }
 
 }
 
@@ -374,7 +423,9 @@ class NodeCell: UICollectionViewCell {
     @IBOutlet var addAlarmBtn: UIButton!
     @IBOutlet var touchAreaView: UIView!
     
+    @IBOutlet var nodeBg: UIImageView!
     @IBOutlet var lbBtn: UIButton!
+    @IBOutlet var lowBatteryImg: UIImageView!
     
     @IBAction func tappedAddAlarm(sender: AnyObject) {
         let isOnAlarmsMode:Bool = (self.parentViewController?.toggleAlarmsViewForNode(self.node!))!
@@ -388,7 +439,18 @@ class NodeCell: UICollectionViewCell {
     }
 
     @IBAction func tappedLpBtn(sender: AnyObject) {
-        Alamofire.request(.GET, WS_URL + "/lowpower/on/" + (self.node?.macAddress)!);
+        
+        if (self.node!.lowPowerOn) {
+            Alamofire.request(.GET, WS_URL + "/lowpower/" + (self.node?.macAddress)! + "/0");
+            lbBtn.setTitle("Turn LP on", forState: UIControlState.Normal)
+            node?.lowPowerOn = false
+        }
+        else {
+            Alamofire.request(.GET, WS_URL + "/lowpower/" + (self.node?.macAddress)! + "/1");
+            lbBtn.setTitle("Turn LP off", forState: UIControlState.Normal)
+            node?.lowPowerOn = true
+        }
     }
+    
 }
 
