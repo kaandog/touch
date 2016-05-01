@@ -12,6 +12,7 @@
 volatile uint8_t node_acks[MAX_NODES];
 volatile touch_packet_t node_lp_cmds[MAX_NODES];
 volatile uint8_t node_lp_stats[MAX_NODES];
+volatile uint8_t reachable_nodes[MAX_NODES];
 volatile int8_t low_power_mode = 0;
 
 void low_power_on(void)
@@ -191,6 +192,7 @@ void rx_gw_callback(uint8_t *buf, uint8_t buf_len)
     {
         DEBUG_PRINT("shouldn't be getting here! %c\n", pkt.cmd);
     }
+    notify_node_reachability(1, pkt.src_node_id);
 
     return;
 }
@@ -447,6 +449,20 @@ void touch_node_main(void)
     }
 }
 
+void notify_node_reachability(uint8_t is_reachable, uint8_t node_id)
+{
+    if (node_id >= MAX_NODES)
+    {
+        return;
+    }
+
+    if (reachable_nodes[node_id] != is_reachable)
+    {
+        printf("e,%d,%d\n", is_reachable, node_id);
+        reachable_nodes[node_id] = is_reachable;
+    }
+}
+
 void touch_gw_main(void)
 {
     char input;
@@ -488,7 +504,9 @@ void touch_gw_main(void)
             {
                 if (touch_tx_with_auto_retry((char)cmd, (int16_t) data, (uint8_t) dest_id, 3) != TOUCH_SUCCESS)
                 {
-                    printf("e,%d\n", dest_id);
+                    cli();
+                    notify_node_reachability(0,dest_id);
+                    sei();
                     return;
                 }
                 node_lp_stats[dest_id] = 1;
@@ -518,7 +536,9 @@ void touch_gw_main(void)
     {
         if (touch_tx_with_auto_retry((char)cmd, (int16_t)data, (uint8_t) dest_id, 3) != TOUCH_SUCCESS)
         {
-            printf("e,%d\n", dest_id);
+            cli();
+            notify_node_reachability(0,dest_id);
+            sei();
         }
     }
 }
@@ -534,6 +554,7 @@ void touch_init(uint8_t is_gw)
         node_lp_cmds[i].data = 0;
         node_lp_cmds[i].dest_node_id = 0;
         node_lp_cmds[i].src_node_id = 0;
+        reachable_nodes[i] = 1;
     }
 
     if (is_gw)
